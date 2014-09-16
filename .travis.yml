@@ -8,7 +8,7 @@ matrix:
     - rvm: jruby-19mode
     - rvm: jruby-20mode
     - rvm: rbx-2
-    fast_finish: true
+  fast_finish: true
 
 rvm:
   - 1.9.3
