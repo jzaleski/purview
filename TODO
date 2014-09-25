@@ -1,0 +1,63 @@
+x Handle blank values a bit more intelligently (all blanks -> nil)
+  x Add support for INSERTs, UPDATEs and DELETEs (of table-data)
+x Deal w/ NULL values
+x Deal w/ BOOL values
+x Build out MVP for PostgreSQL loader
+  x Create temporary table from table-metadata and load all of the parsed rows
+    into it (build create, update and delete logic atop the temporary table)
+  x Map [object-]types to database types (in the loader?)
+x Add windowing to pulls (simulate w/ 2 different data-files if necessary)
+  x Store max-timestamp pulled (NULL or previous window + window size)
+  x Add configuration to `Table` for window-size (in the future this can scale
+    dynamically)
+x Include [window] timestamps in query-string for pull[er]
+x Figure out an intelligent way to solve the chicken <-> egg problem for
+  `table_metadata`
+x Fail fast if there are no candidate tables (`next_table`)
+x Ensure that the puller does not try to go into the future (`next_window`)
+x Add in a primitive logging facility (can be temporary)
+x Enhance `next_table_sql`
+x Lock tables (feeds) during pull, parse and load
+x Verify table-locking mechanism behaves as expected
+x Clean-up code
+x Ability to drop a table
+x Reorder args: "table, table_name" to: "table_name, table"
+x Reorder args: "table, index_name, *columns" to "index_name, table, *columns"
+x Ability to create an index
+x Ability to drop an index
+x Indices on `created_at` and `updated_at` columns
+x Gracefully handle table {,un}locking in case of error
+x Add debugging code
+x Raise no-window & no-table exceptions (making them catchable upstream)
+x Minimize race-condition around table-locking (use where on UPDATE, raise if
+  zero rows are updated)
+x Log number of delete, inserts and updates in `loader`
+
+* Usage/configuration examples in README.md
+* Configurable re-pull window (do this automatically once up to current?)
+* Add tests
+* Add comments where appropriate (on-going)
+* DRY/Refactor (on-going)
+
+... INTEGRATION ...
+
+* Deployment
+* Scheduling (Daemon? CRON?)
+
+... QUESTIONS ...
+
+x Where is the best place to create the connection?
+  x Immediately? Then it's open during the pull, etc.
+  x Lazily? Makes for connection logic all over the place
+    x Perhaps it can be centralized entirely into the `Database` class?
+x Consider using ISO-8601 timestamps in query-string (not sure on this one, it
+  is slightly more fragile because of URL-encoding, etc.)
+* Is there a better name than `limitless_types`?
+* Is there a better name than `data`?
+
+... NEXT STEPS ...
+
+* Add schema management capabilities (detect schema-deltas and suggestion
+  modifications)
+* Build out change-log tables
+* Build out canonical, fact and aggregate tables (and related transforms)
