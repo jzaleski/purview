@@ -33,9 +33,10 @@ x Minimize race-condition around table-locking (use where on UPDATE, raise if
   zero rows are updated)
 x Log number of delete, inserts and updates in `loader`
 
+* `load_temporary_table` should bomb if there is data outside the window
 * Usage/configuration examples in README.md
 * Configurable re-pull window (do this automatically once up to current?)
-* Add tests
+* Add tests (on-going)
 * Add comments where appropriate (on-going)
 * DRY/Refactor (on-going)
 
