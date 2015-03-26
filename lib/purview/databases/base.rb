@@ -257,8 +257,8 @@ module Purview
       end
 
       def get_enabled_for_table(connection, table)
-        result = connection.execute(get_last_pulled_at_for_table_sql(table)).data[0]
-        enabled = result[table_metadata_enabled_column_name]
+        row = connection.execute(get_last_pulled_at_for_table_sql(table)).rows[0]
+        enabled = row[table_metadata_enabled_column_name]
         !!(enabled =~ /\A(true|t|yes|y|1)\z/)
       end
 
@@ -267,8 +267,8 @@ module Purview
       end
 
       def get_last_pulled_at_for_table(connection, table)
-        result = connection.execute(get_last_pulled_at_for_table_sql(table)).data[0]
-        timestamp = result[table_metadata_last_pulled_at_column_name]
+        row = connection.execute(get_last_pulled_at_for_table_sql(table)).rows[0]
+        timestamp = row[table_metadata_last_pulled_at_column_name]
         timestamp ? Time.parse(timestamp) : nil
       end
 
@@ -277,8 +277,8 @@ module Purview
       end
 
       def get_locked_at_for_table(connection, table)
-        result = connection.execute(get_locked_at_for_table_sql(table)).data[0]
-        timestamp = result[table_metadata_locked_at_column_name]
+        row = connection.execute(get_locked_at_for_table_sql(table)).rows[0]
+        timestamp = row[table_metadata_locked_at_column_name]
         timestamp ? Time.parse(timestamp) : nil
       end
 
@@ -287,8 +287,8 @@ module Purview
       end
 
       def get_max_timestamp_pulled_for_table(connection, table)
-        result = connection.execute(get_max_timestamp_pulled_for_table_sql(table)).data[0]
-        timestamp = result[table_metadata_max_timestamp_pulled_column_name]
+        row = connection.execute(get_max_timestamp_pulled_for_table_sql(table)).rows[0]
+        timestamp = row[table_metadata_max_timestamp_pulled_column_name]
         timestamp ? Time.parse(timestamp) : table.starting_timestamp
       end
 
@@ -312,8 +312,8 @@ module Purview
       def next_table(connection, timestamp)
         ensure_table_metadata_table_exists
         ensure_table_metadata_exists_for_tables
-        result = connection.execute(next_table_sql(timestamp)).data[0]
-        table_name = result && result[table_metadata_table_name_column_name]
+        row = connection.execute(next_table_sql(timestamp)).rows[0]
+        table_name = row && row[table_metadata_table_name_column_name]
         table_name ? tables_by_name[table_name] : nil
       end
 

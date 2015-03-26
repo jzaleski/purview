@@ -8,7 +8,7 @@ require 'set'
 require 'time'
 require 'uri'
 
-require 'purview/mixins/logger'
+require 'purview/mixins'
 
 require 'purview/columns'
 require 'purview/connections'

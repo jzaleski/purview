@@ -1,10 +1,6 @@
 module Purview
   module Loggers
     class Base
-      DEBUG = 'DEBUG'
-      ERROR = 'ERROR'
-      INFO = 'INFO'
-
       def initialize(opts={})
         @opts = default_opts.merge(opts)
       end
@@ -27,6 +23,10 @@ module Purview
       end
 
       private
+
+      DEBUG = 'DEBUG'
+      ERROR = 'ERROR'
+      INFO = 'INFO'
 
       attr_reader :opts
 
@@ -65,6 +65,7 @@ module Purview
         {
           :debug => true,
           :error => true,
+          :info => false,
         }
       end
 

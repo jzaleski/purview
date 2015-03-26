@@ -1,20 +1,20 @@
 module Purview
   module Loaders
-    class Postgres < Base
+    class PostgreSQL < Base
       def load(connection, rows, window)
         with_context_logging("`load` for: #{table.name}") do
-          with_temporary_table(connection, rows) do |temporary_table_name|
-            delete_result = \
-              connection.execute(table_delete_sql(window, temporary_table_name))
+          with_temporary_table(connection, rows, window) do |temporary_table_name|
             update_result = \
               connection.execute(table_update_sql(window, temporary_table_name))
+            delete_result = \
+              connection.execute(table_delete_sql(window, temporary_table_name))
             insert_result = \
               connection.execute(table_insert_sql(window, temporary_table_name))
             logger.debug(
-              '%d row(s) deleted, %d row(s) inserted and %d row(s) updated in: %s' % [
-                delete_result.rows_affected,
+              '%d row(s) inserted, %d row(s) updated and %d row(s) deleted in: %s' % [
                 insert_result.rows_affected,
                 update_result.rows_affected,
+                delete_result.rows_affected,
                 table.name,
               ]
             )
@@ -42,7 +42,7 @@ module Purview
         ]
       end
 
-      def load_temporary_table(connection, temporary_table_name, rows)
+      def load_temporary_table(connection, temporary_table_name, rows, window)
         with_context_logging("`load_temporary_table` for: #{temporary_table_name}") do
           rows.each_slice(rows_per_slice) do |rows_slice|
             connection.execute(
@@ -69,12 +69,11 @@ module Purview
       end
 
       def table_insert_sql(window, temporary_table_name)
-        'INSERT INTO %s (%s) SELECT %s FROM %s t1 WHERE t1.%s AND NOT EXISTS (SELECT 1 FROM %s t2 WHERE t1.%s = t2.%s)' % [
+        'INSERT INTO %s (%s) SELECT %s FROM %s t1 WHERE NOT EXISTS (SELECT 1 FROM %s t2 WHERE t1.%s = t2.%s)' % [
           table.name,
           table.column_names.join(', '),
           table.column_names.join(', '),
           temporary_table_name,
-          window_sql(window),
           table.name,
           table.id_column.name,
           table.id_column.name,
@@ -82,13 +81,12 @@ module Purview
       end
 
       def table_update_sql(window, temporary_table_name)
-        'UPDATE %s t1 SET %s FROM %s t2 WHERE t1.%s = t2.%s AND t2.%s' % [
+        'UPDATE %s t1 SET %s FROM %s t2 WHERE t1.%s = t2.%s' % [
           table.name,
           table.column_names.map { |column_name| "#{column_name} = t2.#{column_name}" }.join(', '),
           temporary_table_name,
           table.id_column.name,
           table.id_column.name,
-          window_sql(window),
         ]
       end
 
@@ -100,6 +98,29 @@ module Purview
         ]
       end
 
+      def temporary_table_verify_sql(temporary_table_name, rows, window)
+        'SELECT COUNT(1) FROM %s WHERE %s NOT BETWEEN %s AND %s' % [
+          temporary_table_name,
+          table.updated_timestamp_column.name,
+          quoted(window.min),
+          quoted(window.max),
+        ]
+      end
+
+      def verify_temporary_table(connection, temporary_table_name, rows, window)
+        with_context_logging("`verify_temporary_table` for: #{temporary_table_name}") do
+          rows_outside_window = connection.execute(
+            temporary_table_verify_sql(
+              temporary_table_name,
+              rows,
+              window
+            )
+          ).rows[0][0]
+          raise Purview::Exceptions::RowsOutsideWindow.new(temporary_table_name, rows_outside_window) \
+            unless rows_outside_window == 0
+        end
+      end
+
       def window_sql(window)
         '%s BETWEEN %s AND %s' % [
           table.updated_timestamp_column.name,
@@ -108,13 +129,20 @@ module Purview
         ]
       end
 
-      def with_temporary_table(connection, rows)
+      def with_temporary_table(connection, rows, window)
         yield(
           create_temporary_table(connection).tap do |temporary_table_name|
             load_temporary_table(
               connection,
               temporary_table_name,
-              rows
+              rows,
+              window
+            )
+            verify_temporary_table(
+              connection,
+              temporary_table_name,
+              rows,
+              window
             )
           end
         )

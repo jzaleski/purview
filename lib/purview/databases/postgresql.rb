@@ -1,6 +1,6 @@
 module Purview
   module Databases
-    class Postgres < Base
+    class PostgreSQL < Base
       def false_value
         'FALSE'
       end
@@ -34,7 +34,7 @@ module Purview
       end
 
       def connection_type
-        Purview::Connections::Postgres
+        Purview::Connections::PostgreSQL
       end
 
       def create_index_sql(table_name, index_name, table, columns, index_opts={})
