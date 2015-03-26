@@ -38,20 +38,28 @@
 * Rename `data` to `rows` in `execute`
 * Rename `Postgres` to `PostgreSQL`
 
-... OPEN TASKS ....
+... MVP TASKS ...
 
-* Fix JRuby bundle/build
 * Add MySQL support (require `mysql2` gem)
 * Usage/configuration examples in README.md
+
+... ONGOING TASKS ...
+
+* Add tests
+* Add comments where appropriate
+* DRY/Refactor
+
+... OPEN TASKS ....
 
 * Build out change-log tables
 * Build out canonical, fact and aggregate tables (and related transforms)
 * Configurable re-pull window (do this automatically once up to current?)
 * Add schema management capabilities (detect schema-deltas and suggestion
   modifications)
-* Add tests (on-going)
-* Add comments where appropriate (on-going)
-* DRY/Refactor (on-going)
+
+... DEFERRED TASKS ...
+
+* Fix JRuby bundle/build
 
 ... CLOSED QUESTIONS ...
 
