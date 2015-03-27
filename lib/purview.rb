@@ -3,10 +3,12 @@ require 'date'
 require 'net/http'
 require 'openssl'
 require 'ostruct'
-require 'pg'
 require 'set'
 require 'time'
 require 'uri'
+
+%w[pg mysql2].each { |gem| begin; require gem; rescue LoadError; end }
+abort 'Could not load the `pg` or `mysql2` gem' unless defined?(PG) || defined?(Mysql2)
 
 require 'purview/mixins'
 
