@@ -1,2 +1,2 @@
 require 'purview/databases/base'
-require 'purview/databases/postgres'
+require 'purview/databases/postgresql'
