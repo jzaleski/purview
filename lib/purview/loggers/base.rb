@@ -6,15 +6,15 @@ module Purview
       end
 
       def debug(*args)
-        log(DEBUG, *args) if debug?
+        log(DEBUG_LEVEL, *args) if debug?
       end
 
       def error(*args)
-        log(ERROR, *args) if error?
+        log(ERROR_LEVEL, *args) if error?
       end
 
       def info(*args)
-        log(INFO, *args) if info?
+        log(INFO_LEVEL, *args) if info?
       end
 
       def with_context_logging(*args)
@@ -24,9 +24,9 @@ module Purview
 
       private
 
-      DEBUG = 'DEBUG'
-      ERROR = 'ERROR'
-      INFO = 'INFO'
+      DEBUG_LEVEL = 'DEBUG'
+      ERROR_LEVEL = 'ERROR'
+      INFO_LEVEL = 'INFO'
 
       attr_reader :opts
 
