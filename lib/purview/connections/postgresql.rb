@@ -1,17 +1,6 @@
 module Purview
   module Connections
     class PostgreSQL < Base
-      def connect
-        @connection ||= PG.connect(opts)
-        self
-      end
-
-      def disconnect
-        connection.close
-        @connection = nil
-        self
-      end
-
       def execute(sql)
         result = connection.exec(sql)
         rows = result && result.to_a
@@ -25,7 +14,9 @@ module Purview
 
       private
 
-      attr_reader :connection
+      def new_connection
+        PG.connect(opts)
+      end
     end
   end
 end

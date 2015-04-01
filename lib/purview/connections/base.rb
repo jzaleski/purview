@@ -6,11 +6,14 @@ module Purview
       end
 
       def connect
-        raise %{All "#{Base}(s)" must override the "connect" method}
+        @connection ||= new_connection
+        self
       end
 
       def disconnect
-        raise %{All "#{Base}(s)" must override the "disconnect" method}
+        connection.close
+        @connection = nil
+        self
       end
 
       def execute(sql)
@@ -25,7 +28,11 @@ module Purview
 
       include Purview::Mixins::Logger
 
-      attr_reader :opts
+      attr_reader :opts, :connection
+
+      def new_connection
+        raise %{All "#{Base}(s)" must override the "new_connection" method}
+      end
     end
   end
 end
