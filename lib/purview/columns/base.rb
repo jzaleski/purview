@@ -16,8 +16,16 @@ module Purview
         opts[:default]
       end
 
+      def default?
+        !!default
+      end
+
       def limit
         opts[:limit]
+      end
+
+      def limit?
+        !!limit
       end
 
       def parse(value)

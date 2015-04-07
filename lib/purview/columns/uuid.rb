@@ -4,7 +4,7 @@ module Purview
       private
 
       def default_opts
-        super.merge(:type => Purview::Types::String, :limit => 36)
+        super.merge(:type => Purview::Types::UUID, :limit => 36)
       end
     end
   end

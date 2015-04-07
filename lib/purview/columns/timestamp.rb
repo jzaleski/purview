@@ -4,7 +4,7 @@ module Purview
       private
 
       def default_opts
-        super.merge(:type => Purview::Types::Time)
+        super.merge(:type => Purview::Types::Timestamp)
       end
     end
   end
