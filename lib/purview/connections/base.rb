@@ -17,7 +17,11 @@ module Purview
       end
 
       def execute(sql)
-        raise %{All "#{Base}(s)" must override the "execute" method}
+        result = execute_sql(sql)
+        Purview::Structs::Result.new(
+          :rows => extract_rows(result),
+          :rows_affected => extract_rows_affected(result)
+        )
       end
 
       def with_transaction
@@ -29,6 +33,18 @@ module Purview
       include Purview::Mixins::Logger
 
       attr_reader :opts, :connection
+
+      def execute_sql(sql)
+        raise %{All "#{Base}(s)" must override the "execute_sql" method}
+      end
+
+      def extract_rows(result)
+        raise %{All "#{Base}(s)" must override the "extract_rows" method}
+      end
+
+      def extract_rows_affected(result)
+        raise %{All "#{Base}(s)" must override the "extract_rows_affected" method}
+      end
 
       def new_connection
         raise %{All "#{Base}(s)" must override the "new_connection" method}

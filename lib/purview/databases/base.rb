@@ -127,7 +127,7 @@ module Purview
             rows_affected = \
               connection.execute(lock_table_sql(table, timestamp)).rows_affected
             raise Purview::Exceptions::CouldNotAcquireLockException.new(table) \
-              if rows_affected == 0
+              if rows_affected.zero?
           end
         end
       end
@@ -168,7 +168,7 @@ module Purview
             rows_affected = \
               connection.execute(unlock_table_sql(table)).rows_affected
             raise Purview::Exceptions::LockAlreadyReleasedException.new(table) \
-              if rows_affected == 0
+              if rows_affected.zero?
           end
         end
       end
@@ -411,7 +411,7 @@ module Purview
         now = timestamp
         return nil if min > now
         max = now if max > now
-        OpenStruct.new(:min => min, :max => max)
+        Purview::Structs::Window.new(:min => min, :max => max)
       end
 
       def set_enabled_for_table(connection, table, enabled)

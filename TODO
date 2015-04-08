@@ -37,10 +37,11 @@
 * Delete from outside window where id in temporary table
 * Rename `data` to `rows` in `execute`
 * Rename `Postgres` to `PostgreSQL`
+* Finish PostgreSQL support (requires `pg` gem)
+* Add MySQL support (requires `mysql2` gem)
 
 ... MVP TASKS ...
 
-* Add MySQL support (require `mysql2` gem)
 * Usage/configuration examples in README.md
 
 ... ONGOING TASKS ...
