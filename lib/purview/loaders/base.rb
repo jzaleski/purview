@@ -28,18 +28,20 @@ module Purview
 
       private
 
+      include Purview::Mixins::Helpers
       include Purview::Mixins::Logger
 
       attr_reader :opts
 
+      def count_column_name
+        'count'
+      end
+
       def create_temporary_table(connection)
-        database.create_table(
+        database.create_temporary_table(
           connection,
           table,
-          :table => {
-            :name => table.temporary_name,
-            :temporary => true,
-          }
+          :table => { :name => table.temporary_name }
         )
       end
 
@@ -48,10 +50,11 @@ module Purview
       end
 
       def id_in_sql(temporary_table_name)
-        'SELECT %s FROM %s' % [
-          table.id_column.name,
-          temporary_table_name,
-        ]
+        raise %{All "#{Base}(s)" must override the "id_in_sql" method}
+      end
+
+      def in_window_sql(window)
+        raise %{All "#{Base}(s)" must override the "in_window_sql" method}
       end
 
       def load_temporary_table(connection, temporary_table_name, rows, window)
@@ -65,6 +68,10 @@ module Purview
             )
           end
         end
+      end
+
+      def not_in_window_sql(window)
+        raise %{All "#{Base}(s)" must override the "not_in_window_sql" method}
       end
 
       def quoted(value)
@@ -84,93 +91,57 @@ module Purview
       end
 
       def table_delete_sql(window, temporary_table_name)
-        'DELETE FROM %s WHERE %s AND %s NOT IN (%s)' % [
-          table.name,
-          window_sql(window),
-          table.id_column.name,
-          id_in_sql(temporary_table_name),
-        ]
+        raise %{All "#{Base}(s)" must override the "table_delete_sql" method}
       end
-    end
 
-    def table_insert_sql(window, temporary_table_name)
-      'INSERT INTO %s (%s) SELECT %s FROM %s t1 WHERE NOT EXISTS (SELECT 1 FROM %s t2 WHERE t1.%s = t2.%s)' % [
-        table.name,
-        table.column_names.join(', '),
-        table.column_names.join(', '),
-        temporary_table_name,
-        table.name,
-        table.id_column.name,
-        table.id_column.name,
-      ]
-    end
-
-    def table_update_sql(window, temporary_table_name)
-      'UPDATE %s t1 SET %s FROM %s t2 WHERE t1.%s = t2.%s' % [
-        table.name,
-        table.column_names.map { |column_name| "#{column_name} = t2.#{column_name}" }.join(', '),
-        temporary_table_name,
-          table.id_column.name,
-          table.id_column.name,
-      ]
-    end
-
-    def temporary_table_insert_sql(temporary_table_name, rows)
-      'INSERT INTO %s (%s) VALUES %s' % [
-        temporary_table_name,
-        table.column_names.join(', '),
-        rows.map { |row| "(#{row_values(row)})" }.join(', ')
-      ]
-    end
-
-    def temporary_table_verify_sql(temporary_table_name, rows, window)
-      'SELECT COUNT(1) FROM %s WHERE %s NOT BETWEEN %s AND %s' % [
-        temporary_table_name,
-        table.updated_timestamp_column.name,
-        quoted(window.min),
-        quoted(window.max),
-      ]
-    end
-
-    def verify_temporary_table(connection, temporary_table_name, rows, window)
-      with_context_logging("`verify_temporary_table` for: #{temporary_table_name}") do
-        rows_outside_window = connection.execute(
-          temporary_table_verify_sql(
-            temporary_table_name,
-            rows,
-            window
-          )
-        ).rows[0][0]
-        raise Purview::Exceptions::RowsOutsideWindow.new(temporary_table_name, rows_outside_window) \
-          unless rows_outside_window.zero?
+      def table_insert_sql(window, temporary_table_name)
+        raise %{All "#{Base}(s)" must override the "table_insert_sql" method}
       end
-    end
 
-    def window_sql(window)
-      '%s BETWEEN %s AND %s' % [
-        table.updated_timestamp_column.name,
-        quoted(window.min),
-        quoted(window.max),
-      ]
-    end
+      def table_update_sql(window, temporary_table_name)
+        raise %{All "#{Base}(s)" must override the "table_update_sql" method}
+      end
 
-    def with_temporary_table(connection, rows, window)
-      yield(
-        create_temporary_table(connection).tap do |temporary_table_name|
-          load_temporary_table(
-            connection,
-            temporary_table_name,
-            rows,
-            window
-          )
-          verify_temporary_table(
-            connection,
-            temporary_table_name,
-            rows,
-            window
-          )
+      def temporary_table_insert_sql(temporary_table_name, rows)
+        raise %{All "#{Base}(s)" must override the "temporary_table_insert_sql" method}
+      end
+
+      def temporary_table_verify_sql(temporary_table_name, rows, window)
+        raise %{All "#{Base}(s)" must override the "temporary_table_verify_sql" method}
+      end
+
+      def verify_temporary_table(connection, temporary_table_name, rows, window)
+        with_context_logging("`verify_temporary_table` for: #{temporary_table_name}") do
+          rows_outside_window = connection.execute(
+            temporary_table_verify_sql(
+              temporary_table_name,
+              rows,
+              window
+            )
+          ).rows[0][count_column_name]
+          raise Purview::Exceptions::RowsOutsideWindow.new(temporary_table_name, rows_outside_window) \
+            unless zero?(rows_outside_window)
         end
-      )
+      end
+
+      def with_temporary_table(connection, rows, window)
+        yield(
+          create_temporary_table(connection).tap do |temporary_table_name|
+            load_temporary_table(
+              connection,
+              temporary_table_name,
+              rows,
+              window
+            )
+            verify_temporary_table(
+              connection,
+              temporary_table_name,
+              rows,
+              window
+            )
+          end
+        )
+      end
     end
   end
 end

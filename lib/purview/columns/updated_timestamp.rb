@@ -4,7 +4,7 @@ module Purview
       private
 
       def default_opts
-        super.merge(:allow_blank => false)
+        super.merge(:nullable => false)
       end
     end
   end

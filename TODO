@@ -38,10 +38,9 @@
 * Rename `data` to `rows` in `execute`
 * Rename `Postgres` to `PostgreSQL`
 * Finish PostgreSQL support (requires `pg` gem)
-* Add MySQL support (requires `mysql2` gem)
+* Finish MySQL support (requires `mysql2` gem)
 
 ... MVP TASKS ...
-
 * Usage/configuration examples in README.md
 
 ... ONGOING TASKS ...
@@ -52,6 +51,7 @@
 
 ... OPEN TASKS ....
 
+* Create table class to encapulate `table_metadata` logic
 * Build out change-log tables
 * Build out canonical, fact and aggregate tables (and related transforms)
 * Configurable re-pull window (do this automatically once up to current?)
@@ -70,6 +70,10 @@
     * Perhaps it can be centralized entirely into the `Database` class?
 * Consider using ISO-8601 timestamps in query-string (not sure on this one, it
   is slightly more fragile because of URL-encoding, etc.)
+
+... OPEN QUESTIONS ...
+
+* Parallel pulls from the same "source"? Can this be done in one request?
 
 ... INTEGRATION CONSIDERATIONS ...
 

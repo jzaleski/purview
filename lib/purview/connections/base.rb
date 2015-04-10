@@ -17,6 +17,7 @@ module Purview
       end
 
       def execute(sql)
+        logger.debug("Executing: #{sql}")
         result = execute_sql(sql)
         Purview::Structs::Result.new(
           :rows => extract_rows(result),

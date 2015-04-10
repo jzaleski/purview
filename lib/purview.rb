@@ -11,6 +11,7 @@ require 'uri'
 abort 'Could not load the `pg` or `mysql2` gem' unless defined?(PG) || defined?(Mysql2)
 
 require 'purview/mixins'
+require 'purview/refinements'
 
 require 'purview/columns'
 require 'purview/connections'

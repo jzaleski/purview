@@ -8,10 +8,6 @@ module Purview
         @opts = default_opts.merge(opts)
       end
 
-      def allow_blank?
-        [nil, true].include?(opts[:allow_blank])
-      end
-
       def default
         opts[:default]
       end
@@ -28,28 +24,38 @@ module Purview
         !!limit
       end
 
+      def nullable
+        coalesce(opts[:nullable], true)
+      end
+
+      def nullable?
+        !!nullable
+      end
+
       def parse(value)
-        blank_value = blank_value?(value)
-        return nil if blank_value && allow_blank?
-        raise %{Unexpected blank value for column: "#{name}"} if blank_value
+        blank = blank?(value)
+        return nil if blank && nullable?
+        raise %{Unexpected blank value for column: "#{name}"} if blank
         type.parse(value)
       end
 
+      def primary_key
+        opts[:primary_key]
+      end
+
       def primary_key?
-        !!opts[:primary_key]
+        !!primary_key
       end
 
       def type
-        opts[:type] || Purview::Types::String
+        coalesce(opts[:type], Purview::Types::String)
       end
 
       private
 
-      attr_reader :opts
+      include Purview::Mixins::Helpers
 
-      def blank_value?(value)
-        value.nil? || value.strip.empty?
-      end
+      attr_reader :opts
 
       def default_opts
         {}

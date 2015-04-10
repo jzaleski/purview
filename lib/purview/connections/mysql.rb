@@ -4,8 +4,9 @@ module Purview
       def with_transaction
         connection.query(BEGIN_TRANSACTION)
         yield.tap { |result| connection.query(COMMIT_TRANSACTION) }
-      rescue
+      rescue Mysql2::Error
         connection.query(ROLLBACK_TRANSACTION)
+        raise
       end
 
       private
@@ -15,7 +16,7 @@ module Purview
       ROLLBACK_TRANSACTION = 'ROLLBACK'
 
       def execute_sql(sql)
-        connection.query(sql)
+        connection.query(sql, query_opts)
       end
 
       def extract_rows(result)
@@ -23,11 +24,15 @@ module Purview
       end
 
       def extract_rows_affected(result)
-        result && result.affected_rows
+        connection.affected_rows
       end
 
       def new_connection
         Mysql2::Client.new(opts)
+      end
+
+      def query_opts
+        { :cast => false }
       end
     end
   end

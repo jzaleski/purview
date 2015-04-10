@@ -4,7 +4,7 @@ module Purview
       private
 
       def default_opts
-        super.merge(:type => Purview::Types::String)
+        super.merge(:type => Purview::Types::Text)
       end
     end
   end
