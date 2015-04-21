@@ -41,7 +41,7 @@ module Purview
         database.create_temporary_table(
           connection,
           table,
-          :table => { :name => table.temporary_name }
+          :table => temporary_table_opts
         )
       end
 
@@ -104,6 +104,13 @@ module Purview
 
       def temporary_table_insert_sql(temporary_table_name, rows)
         raise %{All "#{Base}(s)" must override the "temporary_table_insert_sql" method}
+      end
+
+      def temporary_table_opts
+        {
+          :create_indices => true,
+          :name => table.temporary_name,
+        }
       end
 
       def temporary_table_verify_sql(temporary_table_name, rows, window)

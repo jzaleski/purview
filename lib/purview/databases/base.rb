@@ -48,13 +48,15 @@ module Purview
               table_opts
             )
           )
-          table.indexed_columns.each do |columns|
-            create_index(
-              connection,
-              table,
-              columns,
-              :table => { :name => table_name }
-            )
+          if table_opts[:create_indices]
+            table.indexed_columns.each do |columns|
+              create_index(
+                connection,
+                table,
+                columns,
+                :table => { :name => table_name }
+              )
+            end
           end
         end
       end
@@ -69,13 +71,15 @@ module Purview
               table_opts
             )
           )
-          table.indexed_columns.each do |columns|
-            create_index(
-              connection,
-              table,
-              columns,
-              :table => { :name => table_name }
-            )
+          if table_opts[:create_indices]
+            table.indexed_columns.each do |columns|
+              create_index(
+                connection,
+                table,
+                columns,
+                :table => { :name => table_name }
+              )
+            end
           end
         end
       end
@@ -298,7 +302,7 @@ module Purview
       end
 
       def extract_table_options(opts)
-        opts[:table] || {}
+        opts[:table] || { :create_indices => true }
       end
 
       def get_enabled_for_table(connection, table)

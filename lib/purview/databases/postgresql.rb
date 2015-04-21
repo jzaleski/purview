@@ -39,9 +39,9 @@ module Purview
       end
 
       def create_temporary_table_sql(table_name, table, table_opts={})
-        'CREATE TEMPORARY TABLE %s (%s)' % [
+        'CREATE TEMPORARY TABLE %s (LIKE %s INCLUDING ALL)' % [
           table_name,
-          column_definitions(table).join(', '),
+          table.name,
         ]
       end
 

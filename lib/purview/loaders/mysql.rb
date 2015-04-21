@@ -65,6 +65,10 @@ module Purview
         ]
       end
 
+      def temporary_table_opts
+        super.merge(:create_indices => false)
+      end
+
       def temporary_table_verify_sql(temporary_table_name, rows, window)
         'SELECT COUNT(1) %s FROM %s WHERE %s' % [
           count_column_name,
