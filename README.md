@@ -119,7 +119,7 @@ rescue PG::DuplicateTable; end
 
 Sync the `Database`. This process will select a `Table`, pull data from its
 [remote-]source and reconcile the new data against the main-table (e.g. perform
-`INSERTs`, 'UPDATEs` and `DELETEs`). When multiple `Table(s)` are configured the
+`INSERTs`, `UPDATEs` and `DELETEs`). When multiple `Table(s)` are configured the
 least recently pulled and available (`enabled` and not `locked`) table will be
 selected (you will likely want to configure one or more processes to load the
 schema run the `sync` at regularly scheduled intervals)
