@@ -21,7 +21,7 @@ Or install it yourself as:
 
 ## Usage
 
-Load the `PostgreSQL` client (for `MySQL` simple change `pg` to `mysql2`)
+Load the `PostgreSQL` client (for `MySQL` simple change 'pg' to 'mysql2')
 ```ruby
 require 'pg'
 ```
