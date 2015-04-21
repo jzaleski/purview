@@ -21,7 +21,7 @@ Or install it yourself as:
 
 ## Usage
 
-Load the `PostgreSQL` client (for `MySQL` simple change 'pg' to 'mysql2')
+Load the `PostgreSQL` client (for `MySQL` simply change 'pg' to 'mysql2')
 ```ruby
 require 'pg'
 ```
@@ -100,14 +100,14 @@ table = Purview::Tables::Raw.new(
 )
 ```
 
-Add the `Table` to the `Database` (schema). In order for table to be `sync[ed]`
-it *must* be added to the `Database`
+Add the `Table` to the `Database` (schema). In order for [the] `table` to be
+`sync[ed]` it *must* be added to [the] `database`
 ```ruby
 database.add_table(table)
 ```
 
 Create the `Table`. Recommended for testing purposes (you will likely want an
-external process to control schema management)
+external process to manage the schema)
 ```ruby
 begin
   database.create_table(
@@ -117,12 +117,12 @@ begin
 rescue PG::DuplicateTable; end
 ```
 
-Sync the `Database`. This process will select a `Table`, pull data from its
-[remote-]source and reconcile the new data against the main-table (e.g. perform
-`INSERTs`, `UPDATEs` and `DELETEs`). When multiple `Table(s)` are configured the
-least recently pulled and available (`enabled` and not `locked`) table will be
-selected (you will likely want to configure one or more processes to load the
-schema run the `sync` at regularly scheduled intervals)
+Sync the `Database`. This process will select a [candidate] `Table`, pull data
+from its [remote-]source and reconcile the new data against the main-table (e.g.
+perform `INSERTs`, `UPDATEs` and `DELETEs`). When multiple `Table(s)` are
+configured the least recently pulled and available (`enabled` and not `locked`)
+table will be selected (you will likely want to configure one or more processes
+to load the schema run the `sync` at regularly scheduled intervals)
 ```ruby
 database.sync
 ```
