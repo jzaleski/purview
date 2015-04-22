@@ -7,8 +7,8 @@ require 'set'
 require 'time'
 require 'uri'
 
-%w[pg mysql2].each { |gem| begin; require gem; rescue LoadError; end }
-abort 'Could not load the `pg` or `mysql2` gem' unless defined?(PG) || defined?(Mysql2)
+%w[mysql2 pg].each { |gem| begin; require gem; rescue LoadError; end }
+abort 'Could not load the `mysql2` or `pg` gem' unless defined?(Mysql2) || defined?(PG)
 
 require 'purview/mixins'
 require 'purview/refinements'
