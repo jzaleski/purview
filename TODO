@@ -72,6 +72,8 @@
 ... OPEN QUESTIONS ...
 
 * Parallel pulls from the same "source"? Can this be done in one request?
+* Rename columns during pull/parse `source_name` & `target_name` perhaps? Maybe
+  create a new type of column?
 
 ... INTEGRATION CONSIDERATIONS ...
 
