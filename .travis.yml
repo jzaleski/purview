@@ -3,9 +3,6 @@ language: ruby
 matrix:
   allow_failures:
     - rvm: jruby-19mode
-    - rvm: jruby-20mode
-    - rvm: rbx-2
-  fast_finish: true
 
 rvm:
   - 1.9.3
@@ -13,6 +10,9 @@ rvm:
   - 2.1.0
   - 2.1.1
   - 2.1.2
+  - 2.1.3
+  - 2.1.4
+  - 2.1.5
+  - 2.2.0
   - jruby-19mode
-  - jruby-20mode
   - rbx-2

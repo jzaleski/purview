@@ -1,0 +1,81 @@
+... CLOSED TASKS ....
+
+* Handle blank values a bit more intelligently (all blanks -> nil)
+  * Add support for INSERTs, UPDATEs and DELETEs (of table-data)
+* Deal w/ NULL values
+* Deal w/ BOOL values
+* Build out MVP for PostgreSQL loader
+  * Create temporary table from table-metadata and load all of the parsed rows
+    into it (build create, update and delete logic atop the temporary table)
+  * Map [object-]types to database types (in the loader?)
+* Add windowing to pulls (simulate w/ 2 different data-files if necessary)
+  * Store max-timestamp pulled (NULL or previous window + window size)
+  * Add configuration to `Table` for window-size (in the future this can scale
+    dynamically)
+* Include [window] timestamps in query-string for pull[er]
+* Figure out an intelligent way to solve the chicken <-> egg problem for
+  `table_metadata`
+* Fail fast if there are no candidate tables (`next_table`)
+* Ensure that the puller does not try to go into the future (`next_window`)
+* Add in a primitive logging facility (can be temporary)
+* Enhance `next_table_sql`
+* Lock tables (feeds) during pull, parse and load
+* Verify table-locking mechanism behaves as expected
+* Ability to drop a table
+* Reorder args: "table, table_name" to: "table_name, table"
+* Reorder args: "table, index_name, *columns" to "index_name, table, *columns"
+* Ability to create an index
+* Ability to drop an index
+* Indices on `created_at` and `updated_at` columns
+* Gracefully handle table {,un}locking in case of error
+* Add debugging code
+* Raise no-window & no-table exceptions (making them catchable upstream)
+* Minimize race-condition around table-locking (use where on UPDATE, raise if
+  zero rows are updated)
+* Log number of delete, inserts and updates in `loader`
+* `load_temporary_table` should bomb if there is data outside the window
+* Delete from outside window where id in temporary table
+* Rename `data` to `rows` in `execute`
+* Rename `Postgres` to `PostgreSQL`
+* Finish PostgreSQL support (requires `pg` gem)
+* Finish MySQL support (requires `mysql2` gem)
+* Usage/configuration examples in README.md
+
+... ONGOING TASKS ...
+
+* Add tests
+* Add comments where appropriate
+* DRY/Refactor
+
+... OPEN TASKS ....
+
+* Create table class to encapulate `table_metadata` logic
+* Build out change-log tables
+* Build out canonical, fact and aggregate tables (and related transforms)
+* Configurable re-pull window (do this automatically once up to current?)
+* Add schema management capabilities (detect schema-deltas and suggestion
+  modifications)
+
+... DEFERRED TASKS ...
+
+* Fix JRuby bundle/build
+
+... CLOSED QUESTIONS ...
+
+* Where is the best place to create the connection?
+  * Immediately? Then it's open during the pull, etc.
+  * Lazily? Makes for connection logic all over the place
+    * Perhaps it can be centralized entirely into the `Database` class?
+* Consider using ISO-8601 timestamps in query-string (not sure on this one, it
+  is slightly more fragile because of URL-encoding, etc.)
+
+... OPEN QUESTIONS ...
+
+* Parallel pulls from the same "source"? Can this be done in one request?
+* Rename columns during pull/parse `source_name` & `target_name` perhaps? Maybe
+  create a new type of column?
+
+... INTEGRATION CONSIDERATIONS ...
+
+* Deployment
+* Scheduling (Daemon? CRON?)
