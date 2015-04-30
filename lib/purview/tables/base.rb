@@ -129,7 +129,7 @@ module Purview
       end
 
       def puller_opts
-        filter_type_option(opts[:puller])
+        merge_table_option(filter_type_option(opts[:puller]))
       end
 
       def puller_type

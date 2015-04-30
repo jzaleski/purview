@@ -14,6 +14,10 @@ module Purview
       include Purview::Mixins::Logger
 
       attr_reader :opts
+
+      def table
+        opts[:table]
+      end
     end
   end
 end
