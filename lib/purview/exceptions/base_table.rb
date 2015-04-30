@@ -1,6 +1,6 @@
 module Purview
   module Exceptions
-    class Table < Base
+    class BaseTable < Base
       def initialize(table)
         @table = table
       end

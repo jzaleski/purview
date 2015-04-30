@@ -1,4 +1,5 @@
 require 'purview/types/base'
+
 require 'purview/types/boolean'
 require 'purview/types/date'
 require 'purview/types/float'

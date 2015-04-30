@@ -49,6 +49,7 @@
 
 ... OPEN TASKS ....
 
+* Create SQL-puller(s)
 * Create table class to encapulate `table_metadata` logic
 * Build out change-log tables
 * Build out canonical, fact and aggregate tables (and related transforms)

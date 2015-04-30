@@ -1,4 +1,5 @@
 require 'purview/columns/base'
+
 require 'purview/columns/boolean'
 require 'purview/columns/date'
 require 'purview/columns/float'
