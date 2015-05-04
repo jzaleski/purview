@@ -40,6 +40,7 @@
 * Finish PostgreSQL support (requires `pg` gem)
 * Finish MySQL support (requires `mysql2` gem)
 * Usage/configuration examples in README.md
+* Create SQL-puller(s)
 
 ... ONGOING TASKS ...
 
@@ -49,7 +50,11 @@
 
 ... OPEN TASKS ....
 
-* Create SQL-puller(s)
+* Add COPY `def copy(sql)` support to PostgreSQL connection
+* Leverage COPY support for PostgreSQL pulls
+* Refactor mutator methods to be globally available (e.g. coalesced -> Coalesce,
+  quoted -> Quote, etc.)
+* Introduce [SQL] dialect(s)
 * Create table class to encapulate `table_metadata` logic
 * Build out change-log tables
 * Build out canonical, fact and aggregate tables (and related transforms)

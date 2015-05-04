@@ -30,6 +30,7 @@ module Purview
 
       include Purview::Mixins::Helpers
       include Purview::Mixins::Logger
+      include Purview::Mixins::SQL
 
       attr_reader :opts
 
@@ -74,12 +75,12 @@ module Purview
         raise %{All "#{Base}(s)" must override the "not_in_window_sql" method}
       end
 
-      def quoted(value)
-        database.quoted(value)
+      def null_value
+        database.null_value
       end
 
       def row_values(row)
-        table.column_names.map { |column_name| quoted(row[column_name]) }.join(', ')
+        table.column_names.map { |column_name| quoted(sanitized(row[column_name])) }.join(', ')
       end
 
       def rows_per_slice

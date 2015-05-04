@@ -5,7 +5,7 @@ module Purview
         with_context_logging("`parse` for: #{table.name}") do
           [].tap do |results|
             headers = extract_headers(data)
-            extract_rows(data) do |row|
+            extract_rows(data).each do |row|
               results << build_result(headers.zip(row))
             end
           end
@@ -14,7 +14,7 @@ module Purview
 
       def validate(data)
         with_context_logging("`validate` for: #{table.name}") do
-          missing_columns = table.column_names - extract_headers(data)
+          missing_columns = missing_columns(data)
           raise 'Missing one or more columns: "%s"' % missing_columns.join('", "') \
             unless missing_columns.empty?
           true
@@ -22,6 +22,18 @@ module Purview
       end
 
       private
+
+      def build_result(row)
+        {}.tap do |result|
+          row.each do |key, value|
+            if column = table.columns_by_name[key]
+              result[key] = column.parse(value)
+            else
+              logger.debug(%{Unexpected column: "#{key}" in data-set})
+            end
+          end
+        end
+      end
 
       def column_separator
         ','
@@ -34,7 +46,11 @@ module Purview
 
       def extract_rows(data)
         rows = data.split(row_separator)[1..-1]
-        rows.each { |row| yield parse_row(row) }
+        rows.map { |row| parse_row(row) }
+      end
+
+      def missing_columns(data)
+        table.column_names - extract_headers(data)
       end
 
       def parse_row(row)

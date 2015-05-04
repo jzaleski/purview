@@ -161,10 +161,6 @@ module Purview
         raise %{All "#{Base}(s)" must override the "null_value" method}
       end
 
-      def quoted(value)
-        value.nil? ? null_value : value.quoted
-      end
-
       def sync
         with_new_connection do |connection|
           with_transaction(connection) do |timestamp|
@@ -202,6 +198,7 @@ module Purview
 
       include Purview::Mixins::Helpers
       include Purview::Mixins::Logger
+      include Purview::Mixins::SQL
 
       attr_reader :opts, :tables
 
@@ -240,7 +237,7 @@ module Purview
       end
 
       def connection_opts
-        {}
+        { :database => name }
       end
 
       def connection_type

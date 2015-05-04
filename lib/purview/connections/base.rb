@@ -2,17 +2,17 @@ module Purview
   module Connections
     class Base
       def initialize(opts={})
-        @opts = opts
+        @opts = map_opts(opts)
       end
 
       def connect
-        @connection ||= new_connection
+        @raw_connection ||= new_connection
         self
       end
 
       def disconnect
-        connection.close
-        @connection = nil
+        raw_connection.close
+        @raw_connection = nil
         self
       end
 
@@ -20,7 +20,7 @@ module Purview
         logger.debug("Executing: #{sql}")
         result = execute_sql(sql)
         Purview::Structs::Result.new(
-          :rows => extract_rows(result),
+          :rows => structify_rows(extract_rows(result) || []),
           :rows_affected => extract_rows_affected(result)
         )
       end
@@ -33,7 +33,7 @@ module Purview
 
       include Purview::Mixins::Logger
 
-      attr_reader :opts, :connection
+      attr_reader :opts, :raw_connection
 
       def execute_sql(sql)
         raise %{All "#{Base}(s)" must override the "execute_sql" method}
@@ -47,8 +47,28 @@ module Purview
         raise %{All "#{Base}(s)" must override the "extract_rows_affected" method}
       end
 
+      def map_opts(opts)
+        opts_map.reduce({}) do |memo, (key1, key2)|
+          value = opts[key1]
+          memo[key2] = value if value
+          memo
+        end
+      end
+
       def new_connection
         raise %{All "#{Base}(s)" must override the "new_connection" method}
+      end
+
+      def opts_map
+        raise %{All "#{Base}(s)" must override the "opts_map" method}
+      end
+
+      def structify_row(row)
+        Purview::Structs::Row.new(row)
+      end
+
+      def structify_rows(rows)
+        rows.map { |row| structify_row(row) }
       end
     end
   end

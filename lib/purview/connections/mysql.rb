@@ -2,10 +2,10 @@ module Purview
   module Connections
     class MySQL < Base
       def with_transaction
-        connection.query(BEGIN_TRANSACTION)
-        yield.tap { |result| connection.query(COMMIT_TRANSACTION) }
+        raw_connection.query(BEGIN_TRANSACTION)
+        yield.tap { |result| raw_connection.query(COMMIT_TRANSACTION) }
       rescue Mysql2::Error
-        connection.query(ROLLBACK_TRANSACTION)
+        raw_connection.query(ROLLBACK_TRANSACTION)
         raise
       end
 
@@ -16,7 +16,7 @@ module Purview
       ROLLBACK_TRANSACTION = 'ROLLBACK'
 
       def execute_sql(sql)
-        connection.query(sql, query_opts)
+        raw_connection.query(sql, query_opts)
       end
 
       def extract_rows(result)
@@ -24,11 +24,21 @@ module Purview
       end
 
       def extract_rows_affected(result)
-        connection.affected_rows
+        raw_connection.affected_rows
       end
 
       def new_connection
         Mysql2::Client.new(opts)
+      end
+
+      def opts_map
+        {
+          :database => :database,
+          :host => :host,
+          :password => :password,
+          :port => :port,
+          :username => :username,
+        }
       end
 
       def query_opts

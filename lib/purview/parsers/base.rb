@@ -10,7 +10,7 @@ module Purview
       end
 
       def validate(data)
-        true
+        raise %{All "#{Base}(s)" must override the "validate" method}
       end
 
       private
@@ -19,16 +19,12 @@ module Purview
 
       attr_reader :opts
 
-      def build_result(row)
-        {}.tap do |result|
-          row.each do |key, value|
-            if column = table.columns_by_name[key]
-              result[key] = column.parse(value)
-            else
-              logger.debug(%{Unexpected column: "#{key}" in data-set})
-            end
-          end
-        end
+      def extract_headers(data)
+        raise %{All "#{Base}(s)" must override the "extract_headers" method}
+      end
+
+      def extract_rows(data)
+        raise %{All "#{Base}(s)" must override the "extract_rows" method}
       end
 
       def table

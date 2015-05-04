@@ -5,7 +5,7 @@ module Purview
         value.to_s.strip.length.zero?
       end
 
-      def coalesce(value, default)
+      def coalesced(value, default)
         value.nil? ? default : value
       end
 

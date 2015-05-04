@@ -15,10 +15,6 @@ module Purview
 
       private
 
-      def connection_opts
-        super.merge(:database => name)
-      end
-
       def connection_type
         Purview::Connections::MySQL
       end

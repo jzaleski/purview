@@ -61,7 +61,7 @@ columns = [
 ]
 ```
 
-Configure the `Puller` (available puller-types: `URI`)
+Configure the `Puller` (available puller-types: `MySQL`, `PostgreSQL` & `URI`)
 ```ruby
 puller_opts = {
   :type => Purview::Pullers::URI,
@@ -69,7 +69,7 @@ puller_opts = {
 }
 ```
 
-Configure the `Parser` (available parser-types: `CSV` & `TSV`)
+Configure the `Parser` (available parser-types: `CSV`, `SQL` & `TSV`)
 ```ruby
 parser_opts = {
   :type => Purview::Parsers::TSV,

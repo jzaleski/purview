@@ -25,7 +25,7 @@ module Purview
       end
 
       def nullable
-        coalesce(opts[:nullable], true)
+        coalesced(opts[:nullable], true)
       end
 
       def nullable?
@@ -48,7 +48,7 @@ module Purview
       end
 
       def type
-        coalesce(opts[:type], Purview::Types::String)
+        coalesced(opts[:type], Purview::Types::String)
       end
 
       private
