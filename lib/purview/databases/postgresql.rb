@@ -1,18 +1,6 @@
 module Purview
   module Databases
     class PostgreSQL < Base
-      def false_value
-        'FALSE'
-      end
-
-      def null_value
-        'NULL'
-      end
-
-      def true_value
-        'TRUE'
-      end
-
       private
 
       def connection_type
@@ -39,6 +27,10 @@ module Purview
           table_name,
           table.name,
         ]
+      end
+
+      def dialect_type
+        Purview::Dialects::PostgreSQL
       end
 
       def drop_index_sql(table_name, index_name, table, columns, index_opts={})

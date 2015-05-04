@@ -41,6 +41,7 @@
 * Finish MySQL support (requires `mysql2` gem)
 * Usage/configuration examples in README.md
 * Create SQL-puller(s)
+* Introduce [SQL] dialect(s)
 
 ... ONGOING TASKS ...
 
@@ -50,21 +51,18 @@
 
 ... OPEN TASKS ....
 
+* Fix JRuby bundle/build
 * Add COPY `def copy(sql)` support to PostgreSQL connection
 * Leverage COPY support for PostgreSQL pulls
-* Refactor mutator methods to be globally available (e.g. coalesced -> Coalesce,
-  quoted -> Quote, etc.)
-* Introduce [SQL] dialect(s)
-* Create table class to encapulate `table_metadata` logic
+* Create class to encapulate `table_metadata` logic
+* Further encapsulate `Dialect` logic
 * Build out change-log tables
 * Build out canonical, fact and aggregate tables (and related transforms)
 * Configurable re-pull window (do this automatically once up to current?)
 * Add schema management capabilities (detect schema-deltas and suggestion
   modifications)
-
-... DEFERRED TASKS ...
-
-* Fix JRuby bundle/build
+* Refactor mutator methods to be globally available (e.g. coalesced -> Coalesce,
+  quoted -> Quote, etc.)
 
 ... CLOSED QUESTIONS ...
 

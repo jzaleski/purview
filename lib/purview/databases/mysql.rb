@@ -1,18 +1,6 @@
 module Purview
   module Databases
     class MySQL < Base
-      def false_value
-        '0'
-      end
-
-      def null_value
-        'NULL'
-      end
-
-      def true_value
-        '1'
-      end
-
       private
 
       def connection_type
@@ -43,6 +31,10 @@ module Purview
 
       def default_map
         super.merge(Purview::Types::Timestamp => '0')
+      end
+
+      def dialect_type
+        Purview::Dialects::MySQL
       end
 
       def drop_index_sql(table_name, index_name, table, columns, index_opts={})

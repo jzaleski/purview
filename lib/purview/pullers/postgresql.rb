@@ -7,8 +7,8 @@ module Purview
         Purview::Connections::PostgreSQL
       end
 
-      def null_value
-        'NULL'
+      def dialect_type
+        Purview::Dialects::PostgreSQL
       end
     end
   end

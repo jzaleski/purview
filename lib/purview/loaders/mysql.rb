@@ -3,6 +3,10 @@ module Purview
     class MySQL < Base
       private
 
+      def dialect_type
+        Purview::Dialects::MySQL
+      end
+
       def id_in_sql(temporary_table_name)
         'SELECT %s FROM %s' % [
           table.id_column.name,

@@ -142,10 +142,6 @@ module Purview
         end
       end
 
-      def false_value
-        raise %{All "#{Base}(s)" must override the "false_value" method}
-      end
-
       def lock_table(table, timestamp)
         with_context_logging("`lock_table` for: #{table_name(table)}") do
           with_new_connection do |connection|
@@ -155,10 +151,6 @@ module Purview
               if zero?(rows_affected)
           end
         end
-      end
-
-      def null_value
-        raise %{All "#{Base}(s)" must override the "null_value" method}
       end
 
       def sync
@@ -179,10 +171,6 @@ module Purview
         end
       end
 
-      def true_value
-        raise %{All "#{Base}(s)" must override the "true_value" method}
-      end
-
       def unlock_table(table)
         with_context_logging("`unlock_table` for: #{table_name(table)}") do
           with_new_connection do |connection|
@@ -198,7 +186,6 @@ module Purview
 
       include Purview::Mixins::Helpers
       include Purview::Mixins::Logger
-      include Purview::Mixins::SQL
 
       attr_reader :opts, :tables
 
@@ -264,6 +251,14 @@ module Purview
         {}
       end
 
+      def dialect
+        dialect_type.new
+      end
+
+      def dialect_type
+        raise %{All "#{Base}(s)" must override the "dialect_type" method}
+      end
+
       def drop_index_sql(table_name, index_name, table, columns, index_opts={})
         raise %{All "#{Base}(s)" must override the "drop_index_sql" method}
       end
@@ -300,6 +295,10 @@ module Purview
 
       def extract_table_options(opts)
         opts[:table] || { :create_indices => true }
+      end
+
+      def false_value
+        dialect.false_value
       end
 
       def get_enabled_for_table(connection, table)
@@ -387,12 +386,24 @@ module Purview
         Purview::Structs::Window.new(:min => min, :max => max)
       end
 
+      def null_value
+        dialect.null_value
+      end
+
       def nullable?(column)
         column.nullable?
       end
 
       def primary_key?(column)
         column.primary_key?
+      end
+
+      def quoted(value)
+        dialect.quoted(value)
+      end
+
+      def sanitized(value)
+        dialect.sanitized(value)
       end
 
       def set_enabled_for_table(connection, table, enabled)
@@ -486,6 +497,10 @@ module Purview
 
       def table_name(table, table_opts={})
         table_opts[:name] || table.name
+      end
+
+      def true_value
+        dialect.true_value
       end
 
       def type(column)

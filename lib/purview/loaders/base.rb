@@ -30,7 +30,6 @@ module Purview
 
       include Purview::Mixins::Helpers
       include Purview::Mixins::Logger
-      include Purview::Mixins::SQL
 
       attr_reader :opts
 
@@ -48,6 +47,18 @@ module Purview
 
       def database
         table.database
+      end
+
+      def dialect
+        dialect_type.new
+      end
+
+      def dialect_type
+        raise %{All "#{Base}(s)" must override the "dialect_type" method}
+      end
+
+      def false_value
+        dialect.false_value
       end
 
       def id_in_sql(temporary_table_name)
@@ -76,7 +87,11 @@ module Purview
       end
 
       def null_value
-        database.null_value
+        dialect.null_value
+      end
+
+      def quoted(value)
+        dialect.quoted(value)
       end
 
       def row_values(row)
@@ -85,6 +100,10 @@ module Purview
 
       def rows_per_slice
         opts[:rows_per_slice] || 1000
+      end
+
+      def sanitized(value)
+        dialect.sanitized(value)
       end
 
       def table
@@ -116,6 +135,10 @@ module Purview
 
       def temporary_table_verify_sql(temporary_table_name, rows, window)
         raise %{All "#{Base}(s)" must override the "temporary_table_verify_sql" method}
+      end
+
+      def true_value
+        dialect.true_value
       end
 
       def verify_temporary_table(connection, temporary_table_name, rows, window)

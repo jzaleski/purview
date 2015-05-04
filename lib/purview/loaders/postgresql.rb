@@ -3,6 +3,10 @@ module Purview
     class PostgreSQL < Base
       private
 
+      def dialect_type
+        Purview::Dialects::PostgreSQL
+      end
+
       def id_in_sql(temporary_table_name)
         'SELECT %s FROM %s' % [
           table.id_column.name,
