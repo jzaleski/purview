@@ -9,6 +9,7 @@ module Purview
 
       private
 
+      include Purview::Mixins::Connection
       include Purview::Mixins::Helpers
       include Purview::Mixins::Logger
 
@@ -16,22 +17,14 @@ module Purview
         table.column_names
       end
 
-      def connect
-        connection.connect
-      end
-
-      def connection
-        connection_type.new(connection_opts)
-      end
-
       def connection_opts
-        {
+        filter_nil_values(
           :database => database_name,
           :host => database_host,
           :password => database_password,
           :port => database_port,
-          :username => database_username,
-        }
+          :username => database_username
+        )
       end
 
       def connection_type
@@ -98,12 +91,6 @@ module Purview
 
       def true_value
         dialect.true_value
-      end
-
-      def with_new_connection
-        yield connection = connect
-      ensure
-        connection.disconnect if connection
       end
     end
   end

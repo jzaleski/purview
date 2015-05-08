@@ -13,10 +13,6 @@ module Purview
         @tables << table
       end
 
-      def connect
-        connection.connect
-      end
-
       def create_index(connection, table, columns, opts={})
         table_opts = extract_table_options(opts)
         table_name = table_name(table, table_opts)
@@ -184,10 +180,13 @@ module Purview
 
       private
 
+      include Purview::Mixins::Connection
       include Purview::Mixins::Helpers
       include Purview::Mixins::Logger
 
       attr_reader :opts, :tables
+
+      public :connect
 
       def column_names(columns)
         columns.map(&:name)
@@ -217,10 +216,6 @@ module Purview
             results << column_definition(column)
           end
         end
-      end
-
-      def connection
-        connection_type.new(connection_opts)
       end
 
       def connection_opts
@@ -522,12 +517,6 @@ module Purview
 
       def unlock_table_sql(table)
         raise %{All "#{Base}(s)" must override the "unlock_table_sql" method}
-      end
-
-      def with_new_connection
-        yield connection = connect
-      ensure
-        connection.disconnect if connection
       end
 
       def with_next_table(connection, timestamp)

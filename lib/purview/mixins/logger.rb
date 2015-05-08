@@ -6,11 +6,11 @@ module Purview
       end
 
       def logger_opts
-        opts[:logger] || {}
+        (defined?(opts) && opts[:logger]) || {}
       end
 
       def logger_type
-        opts[:logger_type] || Purview::Loggers::Console
+        (defined?(opts) && opts[:logger_type]) || Purview::Loggers::Console
       end
 
       def with_context_logging(*args)

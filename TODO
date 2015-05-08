@@ -42,6 +42,8 @@
 * Usage/configuration examples in README.md
 * Create SQL-puller(s)
 * Introduce [SQL] dialect(s)
+* Fix JRuby bundle/build
+* Fall back to logged in user if no [database-]username is provided
 
 ... ONGOING TASKS ...
 
@@ -51,7 +53,6 @@
 
 ... OPEN TASKS ....
 
-* Fix JRuby bundle/build
 * Add COPY `def copy(sql)` support to PostgreSQL connection
 * Leverage COPY support for PostgreSQL pulls
 * Create class to encapulate `table_metadata` logic
