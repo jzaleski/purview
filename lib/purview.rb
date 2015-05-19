@@ -1,3 +1,13 @@
+def jruby?
+  defined?(JRUBY_VERSION)
+end
+
+def safe_require(name)
+  require name
+rescue LoadError
+  nil
+end
+
 require 'csv'
 require 'date'
 require 'etc'

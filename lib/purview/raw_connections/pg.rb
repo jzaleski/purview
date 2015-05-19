@@ -1,4 +1,4 @@
-if !defined?(JRUBY_VERSION) && (require 'pg' rescue nil)
+if !jruby? && safe_require('pg')
   module Purview
     module RawConnections
       class PG < Base

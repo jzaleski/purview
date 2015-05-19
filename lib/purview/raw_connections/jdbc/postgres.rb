@@ -1,4 +1,4 @@
-if defined?(JRUBY_VERSION) && (require 'jdbc/postgres' rescue nil)
+if jruby? && safe_require('jdbc/postgres')
   Jdbc::Postgres.load_driver
 
   module Purview

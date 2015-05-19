@@ -1,4 +1,4 @@
-if defined?(JRUBY_VERSION) && (require 'jdbc/mysql' rescue nil)
+if jruby? && safe_require('jdbc/mysql')
   Jdbc::MySQL.load_driver
 
   module Purview

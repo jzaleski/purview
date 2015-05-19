@@ -1,4 +1,4 @@
-if !defined?(JRUBY_VERSION) && (require 'mysql2' rescue nil)
+if !jruby? && safe_require('mysql2')
   module Purview
     module RawConnections
       class Mysql2 < Base
