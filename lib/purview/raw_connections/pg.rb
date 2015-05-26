@@ -1,4 +1,6 @@
-if !jruby? && safe_require('pg')
+safe_require('pg')
+
+if defined?(PG)
   module Purview
     module RawConnections
       class PG < Base
@@ -26,6 +28,10 @@ if !jruby? && safe_require('pg')
               :user => username
             )
           )
+        end
+
+        def username
+          super || ENV['PGUSER'] || Etc.getlogin
         end
       end
     end

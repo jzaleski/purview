@@ -111,7 +111,7 @@ module Purview
       end
 
       def username
-        opts[:username] || Etc.getlogin
+        opts[:username]
       end
     end
   end

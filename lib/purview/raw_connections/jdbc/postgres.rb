@@ -1,4 +1,6 @@
-if jruby? && safe_require('jdbc/postgres')
+safe_require('jdbc-postgres')
+
+if defined?(Jdbc::Postgres)
   Jdbc::Postgres.load_driver
 
   module Purview
@@ -9,6 +11,10 @@ if jruby? && safe_require('jdbc/postgres')
 
           def engine
             'postgresql'
+          end
+
+          def username
+            super || ENV['PGUSER'] || Etc.getlogin
           end
         end
       end

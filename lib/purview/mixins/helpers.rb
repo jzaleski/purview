@@ -9,6 +9,10 @@ module Purview
         value.nil? ? default : value
       end
 
+      def filter_blank_values(hash)
+        hash.reject { |_, value| blank?(value) }
+      end
+
       def filter_nil_values(hash)
         hash.reject { |_, value| value.nil? }
       end

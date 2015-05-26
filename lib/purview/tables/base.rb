@@ -1,7 +1,7 @@
 module Purview
   module Tables
     class Base
-      attr_reader :name
+      attr_reader :database, :name
 
       def initialize(name, opts={})
         @name = name
@@ -40,8 +40,9 @@ module Purview
         ]
       end
 
-      def database
-        opts[:database]
+      def database=(value)
+        raise Purview::Exceptions::DatabaseAlreadyAssigned.new(self) if database
+        @database = value
       end
 
       def id_column

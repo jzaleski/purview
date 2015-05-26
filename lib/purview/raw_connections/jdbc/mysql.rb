@@ -1,4 +1,6 @@
-if jruby? && safe_require('jdbc/mysql')
+safe_require('jdbc-mysql')
+
+if defined?(Jdbc::MySQL)
   Jdbc::MySQL.load_driver
 
   module Purview
@@ -9,6 +11,10 @@ if jruby? && safe_require('jdbc/mysql')
 
           def engine
             'mysql'
+          end
+
+          def username
+            super || ENV['USER'] || Etc.getlogin
           end
         end
       end

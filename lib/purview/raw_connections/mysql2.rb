@@ -1,4 +1,6 @@
-if !jruby? && safe_require('mysql2')
+safe_require('mysql2')
+
+if defined?(Mysql2)
   module Purview
     module RawConnections
       class Mysql2 < Base
@@ -18,14 +20,18 @@ if !jruby? && safe_require('mysql2')
 
         def new_connection
           ::Mysql2::Client.new(
-            filter_nil_values(
-              :database => database,
-              :host => host,
-              :password => password,
+            filter_blank_values(
+              :database => database.to_s,
+              :host => host.to_s,
+              :password => password.to_s,
               :port => port,
-              :username => username
+              :username => username.to_s
             )
           )
+        end
+
+        def username
+          super || ENV['USER'] || Etc.getlogin
         end
       end
     end

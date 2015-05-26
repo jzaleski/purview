@@ -26,22 +26,6 @@ Load the `MySQL` client (for `PostgreSQL` simply change 'mysql2' to 'pg')
 require 'mysql2'
 ```
 
-Set the database-name (this can be anything, but it must exist)
-```ruby
-database_name = :data_warehouse
-```
-
-Combine all the configuration options and instantiate the `Database` (for
-`PostgreSQL` simply change `MySQL` to `PostgreSQL`)
-```ruby
-database_opts = {}
-
-database = Purview::Databases::MySQL.new(
-  database_name,
-  database_opts
-)
-```
-
 Set the table-name (this can be anything, but it must exist)
 ```ruby
 table_name = :users
@@ -93,7 +77,6 @@ Combine all the configuration options and instantiate the `Table`
 ```ruby
 table_opts = {
   :columns => columns,
-  :database => database,
   :loader => loader_opts,
   :parser => parser_opts,
   :puller => puller_opts,
@@ -106,22 +89,39 @@ table = Purview::Tables::Raw.new(
 )
 ```
 
+Set the database-name (this can be anything, but it must exist)
+```ruby
+database_name = :data_warehouse
+```
+
+Combine all the configuration options and instantiate the `Database` (for
+`PostgreSQL` simply change `MySQL` to `PostgreSQL`)
+```ruby
+database_opts = {
+  :tables => [table],
+}
+
+database = Purview::Databases::MySQL.new(
+  database_name,
+  database_opts
+)
+```
+
 Add the `Table` to the `Database` (schema). In order for [the] `Table` to be
 `sync[ed]` it *must* be added to [the] `Database`
 ```ruby
 database.add_table(table)
 ```
 
-Create the `Table`. Recommended for testing purposes *only*. For production
-environments you will likely want an external process to manage the schema (for
-`PostgreSQL` simply change `Mysql2::Error` to `PG::DuplicateTable`)
+Create the `Table` (in the DB). Recommended for testing purposes *only*. For
+production environments you will likely want an external process to manage the
+schema (for `PostgreSQL` simply change `Mysql2::Error` to `PG::DuplicateTable`)
 ```ruby
 begin
-  database.create_table(
-    database.connect,
-    table
-  )
-rescue Mysql2::Error; end
+  database.create_table(table)
+rescue Mysql2::Error
+  # Swallow
+end
 ```
 
 Sync the `Database`. This process will select a [candidate] `Table`, pull data

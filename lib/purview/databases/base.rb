@@ -6,60 +6,39 @@ module Purview
       def initialize(name, opts={})
         @name = name
         @opts = opts
-        @tables = Set.new
       end
 
-      def add_table(table)
-        @tables << table
-      end
-
-      def create_index(connection, table, columns, opts={})
+      def create_table(table, opts={})
         table_opts = extract_table_options(opts)
         table_name = table_name(table, table_opts)
-        index_opts = extract_index_options(opts)
-        index_name(
-          table_name,
-          columns,
-          index_opts
-        ).tap do |index_name|
-          connection.execute(
-            create_index_sql(
-              table_name,
-              index_name,
-              table,
-              columns,
-              index_opts
-            )
-          )
-        end
-      end
-
-      def create_table(connection, table, opts={})
-        table_opts = extract_table_options(opts)
-        table_name(table, table_opts).tap do |table_name|
-          connection.execute(
-            create_table_sql(
-              table_name,
-              table,
-              table_opts
-            )
-          )
-          if table_opts[:create_indices]
-            table.indexed_columns.each do |columns|
-              create_index(
-                connection,
+        with_context_logging("`create_table` for: #{table_name}") do
+          with_new_connection do |connection|
+            connection.execute(
+              create_table_sql(
+                table_name,
                 table,
-                columns,
-                :table => { :name => table_name }
+                table_opts
               )
+            )
+            if table_opts[:create_indices]
+              table.indexed_columns.each do |columns|
+                create_index(
+                  connection,
+                  table,
+                  columns,
+                  :table => { :name => table_name }
+                )
+              end
             end
           end
+          table_name
         end
       end
 
       def create_temporary_table(connection, table, opts={})
         table_opts = extract_table_options(opts)
-        table_name(table, table_opts).tap do |table_name|
+        table_name = table_name(table, table_opts)
+        with_context_logging("`create_temporary_table` for: #{table_name}") do
           connection.execute(
             create_temporary_table_sql(
               table_name,
@@ -77,89 +56,79 @@ module Purview
               )
             end
           end
+          table_name
         end
       end
 
       def disable_table(table)
-        with_context_logging("`disable_table` for: #{table_name(table)}") do
+        table_name = table_name(table)
+        with_context_logging("`disable_table` for: #{table_name}") do
           with_new_connection do |connection|
-            set_enabled_for_table(
-              connection,
-              table,
-              false_value
-            )
+            rows_affected = \
+              connection.execute(disable_table_sql(table)).rows_affected
+            raise Purview::Exceptions::TableAlreadyDisabled.new(table) \
+              if zero?(rows_affected)
           end
+          table_name
         end
       end
 
-      def drop_table(connection, table, opts={})
-        table_opts = extract_table_options(opts)
-        table_name(table, table_opts).tap do |table_name|
-          connection.execute(
-            drop_table_sql(
-              table_name,
-              table,
-              table_opts
-            )
-          )
-        end
-      end
-
-      def drop_index(connection, table, columns, opts={})
+      def drop_table(table, opts={})
         table_opts = extract_table_options(opts)
         table_name = table_name(table, table_opts)
-        index_opts = extract_index_options(opts)
-        index_name(
-          table_name,
-          columns,
-          index_opts
-        ).tap do |index_name|
-          connection.execute(
-            drop_index_sql(
-              table_name,
-              index_name,
-              table,
-              columns,
-              index_opts
-            )
-          )
-        end
-      end
-
-      def enable_table(table)
-        with_context_logging("`enable_table` for: #{table_name(table)}") do
+        with_context_logging("`drop_table` for: #{table_name}") do
           with_new_connection do |connection|
-            set_enabled_for_table(
-              connection,
-              table,
-              true_value
+            connection.execute(
+              drop_table_sql(
+                table_name,
+                table,
+                table_opts
+              )
             )
           end
+          table_name
         end
       end
 
-      def lock_table(table, timestamp)
-        with_context_logging("`lock_table` for: #{table_name(table)}") do
+      def enable_table(table, timestamp=Time.now.utc)
+        table_name = table_name(table)
+        with_context_logging("`enable_table` for: #{table_name}") do
+          with_new_connection do |connection|
+            rows_affected = \
+              connection.execute(enable_table_sql(table, timestamp)).rows_affected
+            raise Purview::Exceptions::TableAlreadyEnabled.new(table) \
+              if zero?(rows_affected)
+          end
+          table_name
+        end
+      end
+
+      def lock_table(table, timestamp=Time.now.utc)
+        table_name = table_name(table)
+        with_context_logging("`lock_table` for: #{table_name}") do
           with_new_connection do |connection|
             rows_affected = \
               connection.execute(lock_table_sql(table, timestamp)).rows_affected
-            raise Purview::Exceptions::CouldNotAcquireLock.new(table) \
+            raise Purview::Exceptions::TableAlreadyLocked.new(table) \
               if zero?(rows_affected)
           end
+          table_name
         end
       end
 
       def sync
-        with_new_connection do |connection|
-          with_transaction(connection) do |timestamp|
-            with_next_table(connection, timestamp) do |table|
-              with_next_window(
-                connection,
-                table,
-                timestamp
-              ) do |window|
-                with_table_locked(table, timestamp) do
-                  table.sync(connection, window)
+        with_context_logging('`sync`') do
+          with_new_connection do |connection|
+            with_transaction(connection) do |timestamp|
+              with_next_table(connection, timestamp) do |table|
+                with_next_window(
+                  connection,
+                  table,
+                  timestamp
+                ) do |window|
+                  with_table_locked(table, timestamp) do
+                    table.sync(connection, window)
+                  end
                 end
               end
             end
@@ -168,13 +137,15 @@ module Purview
       end
 
       def unlock_table(table)
-        with_context_logging("`unlock_table` for: #{table_name(table)}") do
+        table_name = table_name(table)
+        with_context_logging("`unlock_table` for: #{table_name}") do
           with_new_connection do |connection|
             rows_affected = \
               connection.execute(unlock_table_sql(table)).rows_affected
-            raise Purview::Exceptions::LockAlreadyReleased.new(table) \
+            raise Purview::Exceptions::TableAlreadyUnlocked.new(table) \
               if zero?(rows_affected)
           end
+          table_name
         end
       end
 
@@ -184,7 +155,7 @@ module Purview
       include Purview::Mixins::Helpers
       include Purview::Mixins::Logger
 
-      attr_reader :opts, :tables
+      attr_reader :opts
 
       public :connect
 
@@ -219,11 +190,38 @@ module Purview
       end
 
       def connection_opts
-        { :database => name }
+        {
+          :database => database_name,
+          :host => database_host,
+          :password => database_password,
+          :port => database_port,
+          :username => database_username,
+        }
       end
 
       def connection_type
         raise %{All "#{Base}(s)" must override the "connection_type" method}
+      end
+
+      def create_index(connection, table, columns, opts={})
+        table_opts = extract_table_options(opts)
+        table_name = table_name(table, table_opts)
+        index_opts = extract_index_options(opts)
+        index_name(
+          table_name,
+          columns,
+          index_opts
+        ).tap do |index_name|
+          connection.execute(
+            create_index_sql(
+              table_name,
+              index_name,
+              table,
+              columns,
+              index_opts
+            )
+          )
+        end
       end
 
       def create_index_sql(table_name, index_name, table, columns, index_opts={})
@@ -236,6 +234,26 @@ module Purview
 
       def create_temporary_table_sql(table_name, table, table_opts={})
         raise %{All "#{Base}(s)" must override the "create_temporary_table_sql" method}
+      end
+
+      def database_host
+        opts[:host]
+      end
+
+      def database_name
+        name
+      end
+
+      def database_password
+        opts[:password]
+      end
+
+      def database_port
+        opts[:port]
+      end
+
+      def database_username
+        opts[:username]
       end
 
       def default(column)
@@ -254,12 +272,41 @@ module Purview
         raise %{All "#{Base}(s)" must override the "dialect_type" method}
       end
 
+      def disable_table_sql(table)
+        raise %{All "#{Base}(s)" must override the "disable_table_sql" method}
+      end
+
+      def drop_index(table, columns, opts={})
+        table_opts = extract_table_options(opts)
+        table_name = table_name(table, table_opts)
+        index_opts = extract_index_options(opts)
+        index_name(
+          table_name,
+          columns,
+          index_opts
+        ).tap do |index_name|
+          connection.execute(
+            drop_index_sql(
+              table_name,
+              index_name,
+              table,
+              columns,
+              index_opts
+            )
+          )
+        end
+      end
+
       def drop_index_sql(table_name, index_name, table, columns, index_opts={})
         raise %{All "#{Base}(s)" must override the "drop_index_sql" method}
       end
 
       def drop_table_sql(table_name, table, table_opts={})
         raise %{All "#{Base}(s)" must override the "drop_table_sql" method}
+      end
+
+      def enable_table_sql(table, timestamp)
+        raise %{All "#{Base}(s)" must override the "enable_table_sql" method}
       end
 
       def ensure_table_metadata_table_exists
@@ -296,14 +343,14 @@ module Purview
         dialect.false_value
       end
 
-      def get_enabled_for_table(connection, table)
-        row = connection.execute(get_last_pulled_at_for_table_sql(table)).rows[0]
-        enabled = row[table_metadata_enabled_column_name]
-        !!(enabled =~ /\A(true|t|yes|y|1)\z/i)
+      def get_enabled_at_for_table(connection, table)
+        row = connection.execute(get_enabled_at_for_table_sql(table)).rows[0]
+        timestamp = row[table_metadata_enabled_at_column_name]
+        timestamp ? Time.parse(timestamp) : nil
       end
 
-      def get_enabled_for_table_sql(table)
-        raise %{All "#{Base}(s)" must override the "get_enabled_for_table_sql" method}
+      def get_enabled_at_for_table_sql(table)
+        raise %{All "#{Base}(s)" must override the "get_enabled_at_for_table_sql" method}
       end
 
       def get_last_pulled_at_for_table(connection, table)
@@ -401,12 +448,12 @@ module Purview
         dialect.sanitized(value)
       end
 
-      def set_enabled_for_table(connection, table, enabled)
-        connection.execute(set_enabled_for_table_sql(table, enabled))
+      def set_enabled_at_for_table(connection, table, timestamp)
+        connection.execute(set_enabled_at_for_table_sql(table, timestamp))
       end
 
-      def set_enabled_for_table_sql(table, enabled)
-        raise %{All "#{Base}(s)" must override the "set_enabled_for_table_sql" method}
+      def set_enabled_at_for_table_sql(table, timestamp)
+        raise %{All "#{Base}(s)" must override the "set_enabled_at_for_table_sql" method}
       end
 
       def set_last_pulled_at_for_table(connection, table, timestamp)
@@ -433,13 +480,13 @@ module Purview
         raise %{All "#{Base}(s)" must override the "set_max_timestamp_pulled_for_table_sql" method}
       end
 
-      def table_metadata_enabled_column_definition
-        column = Purview::Columns::Boolean.new(table_metadata_enabled_column_name)
+      def table_metadata_enabled_at_column_definition
+        column = Purview::Columns::Timestamp.new(table_metadata_enabled_at_column_name)
         column_definition(column)
       end
 
-      def table_metadata_enabled_column_name
-        'enabled'
+      def table_metadata_enabled_at_column_name
+        'enabled_at'
       end
 
       def table_metadata_last_pulled_at_column_definition
@@ -482,16 +529,24 @@ module Purview
         'table_name'
       end
 
-      def tables_by_name
-        {}.tap do |result|
-          tables.each do |table|
-            result[table.name] = table
+      def table_name(table, table_opts={})
+        table_opts[:name] || table.name
+      end
+
+      def tables
+        @tables ||= Set.new.tap do |result|
+          (opts[:tables] || []).each do |table|
+            table.database = self if result.add?(table)
           end
         end
       end
 
-      def table_name(table, table_opts={})
-        table_opts[:name] || table.name
+      def tables_by_name
+        @tables_by_name ||= {}.tap do |result|
+          tables.each do |table|
+            result[table.name] = table
+          end
+        end
       end
 
       def true_value

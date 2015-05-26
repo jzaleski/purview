@@ -18,13 +18,13 @@ module Purview
       end
 
       def connection_opts
-        filter_nil_values(
+        {
           :database => database_name,
           :host => database_host,
           :password => database_password,
           :port => database_port,
-          :username => database_username
-        )
+          :username => database_username,
+        }
       end
 
       def connection_type
