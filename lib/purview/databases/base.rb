@@ -9,6 +9,7 @@ module Purview
       end
 
       def create_table(table, opts={})
+        ensure_table_metadata_exists_for_table(table)
         table_opts = extract_table_options(opts)
         table_name = table_name(table, table_opts)
         with_context_logging("`create_table` for: #{table_name}") do
@@ -61,6 +62,7 @@ module Purview
       end
 
       def disable_table(table)
+        ensure_table_metadata_exists_for_table(table)
         table_name = table_name(table)
         with_context_logging("`disable_table` for: #{table_name}") do
           with_new_connection do |connection|
@@ -74,6 +76,7 @@ module Purview
       end
 
       def drop_table(table, opts={})
+        ensure_table_metadata_absent_for_table(table)
         table_opts = extract_table_options(opts)
         table_name = table_name(table, table_opts)
         with_context_logging("`drop_table` for: #{table_name}") do
@@ -91,6 +94,7 @@ module Purview
       end
 
       def enable_table(table, timestamp=Time.now.utc)
+        ensure_table_metadata_exists_for_table(table)
         table_name = table_name(table)
         with_context_logging("`enable_table` for: #{table_name}") do
           with_new_connection do |connection|
@@ -104,6 +108,7 @@ module Purview
       end
 
       def lock_table(table, timestamp=Time.now.utc)
+        ensure_table_metadata_exists_for_table(table)
         table_name = table_name(table)
         with_context_logging("`lock_table` for: #{table_name}") do
           with_new_connection do |connection|
@@ -137,6 +142,7 @@ module Purview
       end
 
       def unlock_table(table)
+        ensure_table_metadata_exists_for_table(table)
         table_name = table_name(table)
         with_context_logging("`unlock_table` for: #{table_name}") do
           with_new_connection do |connection|
@@ -309,9 +315,21 @@ module Purview
         raise %{All "#{Base}(s)" must override the "enable_table_sql" method}
       end
 
-      def ensure_table_metadata_table_exists
+      def ensure_table_metadata_absent_for_table(table)
         with_new_connection do |connection|
           connection.execute(ensure_table_metadata_table_exists_sql)
+          connection.execute(ensure_table_metadata_absent_for_table_sql(table))
+        end
+      end
+
+      def ensure_table_metadata_absent_for_table_sql(table)
+        raise %{All "#{Base}(s)" must override the "ensure_table_metadata_absent_for_table_sql" method}
+      end
+
+      def ensure_table_metadata_exists_for_table(table)
+        with_new_connection do |connection|
+          connection.execute(ensure_table_metadata_table_exists_sql)
+          connection.execute(ensure_table_metadata_exists_for_table_sql(table))
         end
       end
 
@@ -321,14 +339,6 @@ module Purview
 
       def ensure_table_metadata_table_exists_sql
         raise %{All "#{Base}(s)" must override the "ensure_table_metadata_table_exists_sql" method}
-      end
-
-      def ensure_table_metadata_exists_for_tables
-        with_new_connection do |connection|
-          tables.each do |table|
-            connection.execute(ensure_table_metadata_exists_for_table_sql(table))
-          end
-        end
       end
 
       def extract_index_options(opts)
@@ -408,8 +418,6 @@ module Purview
       end
 
       def next_table(connection, timestamp)
-        ensure_table_metadata_table_exists
-        ensure_table_metadata_exists_for_tables
         row = connection.execute(next_table_sql(timestamp)).rows[0]
         table_name = row && row[table_metadata_table_name_column_name]
         table_name ? tables_by_name[table_name] : nil

@@ -21,7 +21,9 @@ Or install it yourself as:
 
 ## Usage
 
-Load the `MySQL` client (for `PostgreSQL` simply change 'mysql2' to 'pg')
+Load the `MySQL` client (for `PostgreSQL` simply change 'mysql2' to 'pg' -- when
+using this gem in a JRuby environment the 'jdbc/mysql' and/or 'jdbc/postgres'
+library must be installed/available)
 ```ruby
 require 'mysql2'
 ```
@@ -122,6 +124,12 @@ begin
 rescue Mysql2::Error
   # Swallow
 end
+```
+
+Enable the `Table` (in the DB). Once the related schema has been created the
+`Table` needs to be enabled in order for to be able to be synchronized.
+```ruby
+database.enable_table(table)
 ```
 
 Sync the `Database`. This process will select a [candidate] `Table`, pull data

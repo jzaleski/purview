@@ -67,6 +67,14 @@ module Purview
         ]
       end
 
+      def ensure_table_metadata_absent_for_table_sql(table)
+        'DELETE FROM %s WHERE %s = %s' % [
+          table_metadata_table_name,
+          table_metadata_table_name_column_name,
+          quoted(table.name),
+        ]
+      end
+
       def ensure_table_metadata_exists_for_table_sql(table)
         'INSERT INTO %s (%s) SELECT %s WHERE NOT EXISTS (SELECT 1 FROM %s WHERE %s = %s)' % [
           table_metadata_table_name,
