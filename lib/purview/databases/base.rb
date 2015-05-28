@@ -62,7 +62,6 @@ module Purview
       end
 
       def disable_table(table)
-        ensure_table_metadata_exists_for_table(table)
         table_name = table_name(table)
         with_context_logging("`disable_table` for: #{table_name}") do
           with_new_connection do |connection|
@@ -94,7 +93,6 @@ module Purview
       end
 
       def enable_table(table, timestamp=Time.now.utc)
-        ensure_table_metadata_exists_for_table(table)
         table_name = table_name(table)
         with_context_logging("`enable_table` for: #{table_name}") do
           with_new_connection do |connection|
@@ -108,7 +106,6 @@ module Purview
       end
 
       def lock_table(table, timestamp=Time.now.utc)
-        ensure_table_metadata_exists_for_table(table)
         table_name = table_name(table)
         with_context_logging("`lock_table` for: #{table_name}") do
           with_new_connection do |connection|
@@ -142,7 +139,6 @@ module Purview
       end
 
       def unlock_table(table)
-        ensure_table_metadata_exists_for_table(table)
         table_name = table_name(table)
         with_context_logging("`unlock_table` for: #{table_name}") do
           with_new_connection do |connection|
