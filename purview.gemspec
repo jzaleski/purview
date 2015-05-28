@@ -9,8 +9,8 @@ Gem::Specification.new do |gem|
   gem.version = Purview::VERSION
   gem.authors = ['Jonathan W. Zaleski']
   gem.email = ['JonathanZaleski@gmail.com']
-  gem.summary = 'A framework designed to simplify data warehousing'
-  gem.description = 'Coming soon!'
+  gem.summary = 'A framework created to simplify data-warehousing'
+  gem.description = 'An easy to use configuration-driven framework created to simplify data-warehousing'
   gem.homepage = 'https://github.com/jzaleski/purview'
   gem.license = 'MIT'
 
