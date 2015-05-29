@@ -17,16 +17,6 @@ module Purview
         table.column_names
       end
 
-      def connection_opts
-        {
-          :database => database_name,
-          :host => database_host,
-          :password => database_password,
-          :port => database_port,
-          :username => database_username,
-        }
-      end
-
       def connection_type
         raise %{All "#{BaseSQL}(s)" must override the "connection_type" method}
       end

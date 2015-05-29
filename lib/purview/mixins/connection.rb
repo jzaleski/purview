@@ -5,6 +5,16 @@ module Purview
         connection_type.new(connection_opts)
       end
 
+      def connection_opts
+        {
+          :database => database_name,
+          :host => database_host,
+          :password => database_password,
+          :port => database_port,
+          :username => database_username,
+        }
+      end
+
       def with_new_connection
         connection_type.with_new_connection(connection_opts) { |connection| yield connection }
       end

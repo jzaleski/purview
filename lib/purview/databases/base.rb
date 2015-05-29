@@ -191,16 +191,6 @@ module Purview
         end
       end
 
-      def connection_opts
-        {
-          :database => database_name,
-          :host => database_host,
-          :password => database_password,
-          :port => database_port,
-          :username => database_username,
-        }
-      end
-
       def connection_type
         raise %{All "#{Base}(s)" must override the "connection_type" method}
       end
@@ -239,7 +229,7 @@ module Purview
       end
 
       def database_host
-        opts[:host]
+        opts[:database_host]
       end
 
       def database_name
@@ -247,15 +237,15 @@ module Purview
       end
 
       def database_password
-        opts[:password]
+        opts[:database_password]
       end
 
       def database_port
-        opts[:port]
+        opts[:database_port]
       end
 
       def database_username
-        opts[:username]
+        opts[:database_username]
       end
 
       def default(column)
