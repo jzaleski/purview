@@ -1,3 +1,8 @@
+Release 1.1.1
+-------------
+
+* Add `baseline_table` helper to `Database` class
+
 Release 1.1.0
 -------------
 
