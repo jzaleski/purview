@@ -67,7 +67,7 @@ module Purview
           with_new_connection do |connection|
             rows_affected = \
               connection.execute(disable_table_sql(table)).rows_affected
-            raise Purview::Exceptions::TableAlreadyDisabled.new(table) \
+            raise Purview::Exceptions::CouldNotDisable.new(table) \
               if zero?(rows_affected)
           end
           table_name
@@ -98,7 +98,20 @@ module Purview
           with_new_connection do |connection|
             rows_affected = \
               connection.execute(enable_table_sql(table, timestamp)).rows_affected
-            raise Purview::Exceptions::TableAlreadyEnabled.new(table) \
+            raise Purview::Exceptions::CouldNotEnable.new(table) \
+              if zero?(rows_affected)
+          end
+          table_name
+        end
+      end
+
+      def initialize_table(table, starting_timestamp=Time.now.utc)
+        table_name = table_name(table)
+        with_context_logging("`initialize_table` for: #{table_name}") do
+          with_new_connection do |connection|
+            rows_affected = \
+              connection.execute(initialize_table_sql(table, starting_timestamp)).rows_affected
+            raise Purview::Exceptions::CouldNotInitialize.new(table) \
               if zero?(rows_affected)
           end
           table_name
@@ -111,7 +124,7 @@ module Purview
           with_new_connection do |connection|
             rows_affected = \
               connection.execute(lock_table_sql(table, timestamp)).rows_affected
-            raise Purview::Exceptions::TableAlreadyLocked.new(table) \
+            raise Purview::Exceptions::CouldNotLock.new(table) \
               if zero?(rows_affected)
           end
           table_name
@@ -144,7 +157,7 @@ module Purview
           with_new_connection do |connection|
             rows_affected = \
               connection.execute(unlock_table_sql(table)).rows_affected
-            raise Purview::Exceptions::TableAlreadyUnlocked.new(table) \
+            raise Purview::Exceptions::CouldNotUnlock.new(table) \
               if zero?(rows_affected)
           end
           table_name
@@ -372,7 +385,7 @@ module Purview
       def get_max_timestamp_pulled_for_table(connection, table)
         row = connection.execute(get_max_timestamp_pulled_for_table_sql(table)).rows[0]
         timestamp = row[table_metadata_max_timestamp_pulled_column_name]
-        timestamp ? Time.parse(timestamp) : table.starting_timestamp
+        timestamp ? Time.parse(timestamp) : nil
       end
 
       def get_max_timestamp_pulled_for_table_sql(table)
@@ -384,6 +397,10 @@ module Purview
           table_name,
           column_names(columns).join('_and_'),
         ]
+      end
+
+      def initialize_table_sql(table, starting_timestamp)
+        raise %{All "#{Base}(s)" must override the "initialize_table_sql" method}
       end
 
       def limit(column)

@@ -97,6 +97,17 @@ module Purview
         ]
       end
 
+      def initialize_table_sql(table, starting_timestamp)
+        'UPDATE %s SET %s = %s WHERE %s = %s AND %s IS NULL' % [
+          table_metadata_table_name,
+          table_metadata_max_timestamp_pulled_column_name,
+          quoted(starting_timestamp),
+          table_metadata_table_name_column_name,
+          quoted(table.name),
+          table_metadata_max_timestamp_pulled_column_name,
+        ]
+      end
+
       def get_enabled_at_for_table_sql(table)
         'SELECT %s FROM %s WHERE %s = %s' % [
           table_metadata_enabled_at_column_name,
@@ -149,10 +160,11 @@ module Purview
       end
 
       def next_table_sql(timestamp)
-        'SELECT %s FROM %s WHERE %s IS NOT NULL AND %s IS NULL ORDER BY %s IS NULL DESC, %s LIMIT 1' % [
+        'SELECT %s FROM %s WHERE %s IS NOT NULL AND %s IS NOT NULL AND %s IS NULL ORDER BY %s IS NULL DESC, %s LIMIT 1' % [
           table_metadata_table_name_column_name,
           table_metadata_table_name,
           table_metadata_enabled_at_column_name,
+          table_metadata_max_timestamp_pulled_column_name,
           table_metadata_locked_at_column_name,
           table_metadata_last_pulled_at_column_name,
           table_metadata_last_pulled_at_column_name,

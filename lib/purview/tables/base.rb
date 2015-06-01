@@ -56,10 +56,6 @@ module Purview
         end
       end
 
-      def starting_timestamp
-        opts[:starting_timestamp]
-      end
-
       def sync(connection, window)
         raw_data = puller.pull(window)
         parser.validate(raw_data)

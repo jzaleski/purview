@@ -69,12 +69,6 @@ loader_opts = {
 }
 ```
 
-Configure the `starting_timestamp` (this is the min-date to pull and can vary
-between `Table(s)`)
-```ruby
-starting_timestamp = Time.parse('2012-01-01 00:00:00Z')
-```
-
 Combine all the configuration options and instantiate the `Table`
 ```ruby
 table_opts = {
@@ -82,7 +76,6 @@ table_opts = {
   :loader => loader_opts,
   :parser => parser_opts,
   :puller => puller_opts,
-  :starting_timestamp => starting_timestamp,
 }
 
 table = Purview::Tables::Raw.new(
@@ -126,8 +119,19 @@ rescue Mysql2::Error
 end
 ```
 
-Enable the `Table` (in the DB). Once the related schema has been created the
-`Table` needs to be enabled in order for to be able to be synchronized.
+Initialize the `Table` (in the DB). This process sets the `max_timestamp_pulled`
+value in the `table_metadata` table and is used by the candidate `Table`
+selection algorithm to determine which `Table` should be synchronized next (the
+least recently synchronized `Table` will be selected). This value is also used
+as the high-water mark for records pulled from its source
+```ruby
+database.initialize_table(table, timestamp)
+```
+
+Enable the `Table` (in the DB). This process sets the `enabled_at` value in the
+`table_metadata` table and is used by the candidate `Table` selection algorithm
+to determine the pool of `Table(s)` available for synchronization (to remove a
+`Table` from the pool simply execute `disable_table`)
 ```ruby
 database.enable_table(table)
 ```
