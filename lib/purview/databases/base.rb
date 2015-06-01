@@ -8,6 +8,31 @@ module Purview
         @opts = opts
       end
 
+      def baseline_table(table)
+        with_context_logging('`baseline_table`') do
+          raise Purview::Exceptions::WrongDatabase.new(table) \
+            unless tables.include?(table)
+          starting_timestamp = Time.now.utc
+          with_table_locked(table, starting_timestamp) do
+            last_window = nil
+            begin
+              with_new_connection do |connection|
+                with_transaction(connection) do |transaction_timestamp|
+                  with_next_window(
+                    connection,
+                    table,
+                    transaction_timestamp
+                  ) do |window|
+                    table.sync(connection, window)
+                    last_window = window
+                  end
+                end
+              end
+            end while last_window.max < starting_timestamp
+          end
+        end
+      end
+
       def create_table(table, opts={})
         ensure_table_metadata_exists_for_table(table)
         table_opts = extract_table_options(opts)
@@ -134,14 +159,14 @@ module Purview
       def sync
         with_context_logging('`sync`') do
           with_new_connection do |connection|
-            with_transaction(connection) do |timestamp|
-              with_next_table(connection, timestamp) do |table|
+            with_transaction(connection) do |transaction_timestamp|
+              with_next_table(connection, transaction_timestamp) do |table|
                 with_next_window(
                   connection,
                   table,
-                  timestamp
+                  transaction_timestamp
                 ) do |window|
-                  with_table_locked(table, timestamp) do
+                  with_table_locked(table, transaction_timestamp) do
                     table.sync(connection, window)
                   end
                 end

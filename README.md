@@ -128,6 +128,14 @@ as the high-water mark for records pulled from its source
 database.initialize_table(table, timestamp)
 ```
 
+Baseline the `Table`. This process will quickly get the state of the `Table` as
+close to the current state as possible. This is generally useful when adding a
+new `Table` to an existing schema (ideally this should be done while the `Table`
+is disabled)
+```ruby
+database.baseline_table(table)
+```
+
 Enable the `Table` (in the DB). This process sets the `enabled_at` value in the
 `table_metadata` table and is used by the candidate `Table` selection algorithm
 to determine the pool of `Table(s)` available for synchronization (to remove a
