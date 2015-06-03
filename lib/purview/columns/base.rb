@@ -34,9 +34,8 @@ module Purview
 
       def parse(value)
         blank = blank?(value)
-        return nil if blank && nullable?
-        raise %{Unexpected blank value for column: "#{name}"} if blank
-        type.parse(value)
+        raise %{Unexpected blank value for column: "#{name}"} if blank && !nullable?
+        blank ? nil : type.parse(value)
       end
 
       def primary_key

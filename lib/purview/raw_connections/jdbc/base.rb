@@ -29,15 +29,16 @@ module Purview
         end
 
         def extract_rows(result)
-          return unless result
-          metadata = result.getMetaData
-          column_count = metadata.getColumnCount
-          [].tap do |rows|
-            while result.next
-              rows << {}.tap do |row|
-                (1..column_count).each do |index|
-                  column_name = metadata.getColumnName(index)
-                  row[column_name] = result.getString(column_name)
+          if result
+            metadata = result.getMetaData
+            column_count = metadata.getColumnCount
+            [].tap do |rows|
+              while result.next
+                rows << {}.tap do |row|
+                  (1..column_count).each do |index|
+                    column_name = metadata.getColumnName(index)
+                    row[column_name] = result.getString(column_name)
+                  end
                 end
               end
             end

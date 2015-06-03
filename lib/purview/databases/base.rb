@@ -429,8 +429,7 @@ module Purview
       end
 
       def limit(column)
-        return nil if limitless_types.include?(column.type)
-        column.limit || limit_map[column.type]
+        limitless_types.include?(column.type) ? nil : (column.limit || limit_map[column.type])
       end
 
       def limit_map
@@ -448,7 +447,7 @@ module Purview
       def next_table(connection, timestamp)
         row = connection.execute(next_table_sql(timestamp)).rows[0]
         table_name = row && row[table_metadata_table_name_column_name]
-        table_name ? tables_by_name[table_name] : nil
+        table_name && tables_by_name[table_name]
       end
 
       def next_table_sql(timestamp)
@@ -459,9 +458,10 @@ module Purview
         min = get_max_timestamp_pulled_for_table(connection, table)
         max = min + table.window_size
         now = timestamp
-        return nil if min > now
-        max = now if max > now
-        Purview::Structs::Window.new(:min => min, :max => max)
+        min > now ? nil : Purview::Structs::Window.new(
+          :min => min,
+          :max => max > now ? now : max
+        )
       end
 
       def null_value
