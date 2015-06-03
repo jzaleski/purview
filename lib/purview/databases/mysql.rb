@@ -97,11 +97,11 @@ module Purview
         ]
       end
 
-      def initialize_table_sql(table, starting_timestamp)
+      def initialize_table_sql(table, timestamp)
         'UPDATE %s SET %s = %s WHERE %s = %s AND %s IS NULL' % [
           table_metadata_table_name,
           table_metadata_max_timestamp_pulled_column_name,
-          quoted(starting_timestamp),
+          quoted(timestamp),
           table_metadata_table_name_column_name,
           quoted(table.name),
           table_metadata_max_timestamp_pulled_column_name,

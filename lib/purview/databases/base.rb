@@ -9,26 +9,17 @@ module Purview
       end
 
       def baseline_table(table)
-        with_context_logging('`baseline_table`') do
-          raise Purview::Exceptions::WrongDatabase.new(table) \
-            unless tables.include?(table)
+        raise Purview::Exceptions::WrongDatabase.new(table) \
+          unless tables.include?(table)
+        table_name = table_name(table)
+        with_context_logging("`baseline_table` for: #{table_name}") do
           starting_timestamp = Time.now.utc
           with_table_locked(table, starting_timestamp) do
-            last_window = nil
-            begin
-              with_new_connection do |connection|
-                with_transaction(connection) do |transaction_timestamp|
-                  with_next_window(
-                    connection,
-                    table,
-                    transaction_timestamp
-                  ) do |window|
-                    table.sync(connection, window)
-                    last_window = window
-                  end
-                end
-              end
-            end while last_window.max < starting_timestamp
+            loop do
+              timestamp = Time.now.utc
+              last_window = sync_table_without_lock(table, timestamp)
+              break if last_window.max > starting_timestamp
+            end
           end
         end
       end
@@ -130,12 +121,12 @@ module Purview
         end
       end
 
-      def initialize_table(table, starting_timestamp=Time.now.utc)
+      def initialize_table(table, timestamp=Time.now.utc)
         table_name = table_name(table)
         with_context_logging("`initialize_table` for: #{table_name}") do
           with_new_connection do |connection|
             rows_affected = \
-              connection.execute(initialize_table_sql(table, starting_timestamp)).rows_affected
+              connection.execute(initialize_table_sql(table, timestamp)).rows_affected
             raise Purview::Exceptions::CouldNotInitialize.new(table) \
               if zero?(rows_affected)
           end
@@ -158,21 +149,20 @@ module Purview
 
       def sync
         with_context_logging('`sync`') do
-          with_new_connection do |connection|
-            with_transaction(connection) do |transaction_timestamp|
-              with_next_table(connection, transaction_timestamp) do |table|
-                with_next_window(
-                  connection,
-                  table,
-                  transaction_timestamp
-                ) do |window|
-                  with_table_locked(table, transaction_timestamp) do
-                    table.sync(connection, window)
-                  end
-                end
-              end
-            end
+          timestamp = Time.now.utc
+          with_next_table(timestamp) do |table|
+            sync_table_with_lock(table, timestamp)
           end
+        end
+      end
+
+      def sync_table(table)
+        raise Purview::Exceptions::WrongDatabase.new(table) \
+          unless tables.include?(table)
+        table_name = table_name(table)
+        with_context_logging("`sync_table` for: #{table_name}") do
+          timestamp = Time.now.utc
+          sync_table_with_lock(table, timestamp)
         end
       end
 
@@ -424,7 +414,7 @@ module Purview
         ]
       end
 
-      def initialize_table_sql(table, starting_timestamp)
+      def initialize_table_sql(table, timestamp)
         raise %{All "#{Base}(s)" must override the "initialize_table_sql" method}
       end
 
@@ -514,6 +504,35 @@ module Purview
 
       def set_max_timestamp_pulled_for_table_sql(table, timestamp)
         raise %{All "#{Base}(s)" must override the "set_max_timestamp_pulled_for_table_sql" method}
+      end
+
+      def sync_table_with_lock(table, timestamp)
+        last_window = nil
+        with_table_locked(table, timestamp) do
+          last_window = sync_table_without_lock(table, timestamp)
+        end
+        last_window
+      end
+
+      def sync_table_without_lock(table, timestamp)
+        last_window = nil
+        with_next_window(table, timestamp) do |window|
+          with_new_transaction do |connection|
+            table.sync(connection, window)
+            set_last_pulled_at_for_table(
+              connection,
+              table,
+              timestamp
+            )
+            set_max_timestamp_pulled_for_table(
+              connection,
+              table,
+              window.max
+            )
+            last_window = window
+          end
+        end
+        last_window
       end
 
       def table_metadata_enabled_at_column_definition
@@ -610,30 +629,24 @@ module Purview
         raise %{All "#{Base}(s)" must override the "unlock_table_sql" method}
       end
 
-      def with_next_table(connection, timestamp)
-        table = next_table(connection, timestamp)
-        raise Purview::Exceptions::NoTable.new unless table
-        yield table
-        set_last_pulled_at_for_table(
-          connection,
-          table,
-          timestamp
-        )
+      def with_next_table(timestamp)
+        with_new_connection do |connection|
+          table = next_table(connection, timestamp)
+          raise Purview::Exceptions::NoTable.new unless table
+          yield table
+        end
       end
 
-      def with_next_window(connection, table, timestamp)
-        window = next_window(
-          connection,
-          table,
-          timestamp
-        )
-        raise Purview::Exceptions::NoWindow.new(table) unless window
-        yield window
-        set_max_timestamp_pulled_for_table(
-          connection,
-          table,
-          window.max
-        )
+      def with_next_window(table, timestamp)
+        with_new_connection do |connection|
+          window = next_window(
+            connection,
+            table,
+            timestamp
+          )
+          raise Purview::Exceptions::NoWindow.new(table) unless window
+          yield window
+        end
       end
 
       def with_table_locked(table, timestamp)
@@ -641,10 +654,6 @@ module Purview
         yield
       ensure
         unlock_table(table)
-      end
-
-      def with_transaction(connection)
-        connection.with_transaction { yield Time.now.utc }
       end
     end
   end

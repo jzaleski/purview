@@ -18,6 +18,12 @@ module Purview
       def with_new_connection
         connection_type.with_new_connection(connection_opts) { |connection| yield connection }
       end
+
+      def with_new_transaction
+        with_new_connection do |connection|
+          connection.with_transaction { yield connection }
+        end
+      end
     end
   end
 end
