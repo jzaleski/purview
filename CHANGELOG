@@ -1,3 +1,10 @@
+Release 1.2.0
+-------------
+
+* Use system-time as opposed to assuming/forcing UTC time
+* Add `sync_table` helper to `Database` class
+* Eliminate explicit `return(s)` -- they were causing issues w/ `yield`
+
 Release 1.1.1
 -------------
 
