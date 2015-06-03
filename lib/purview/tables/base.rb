@@ -68,7 +68,7 @@ module Purview
       end
 
       def temporary_name
-        "#{name}_#{Time.now.utc.to_i}"
+        "#{name}_#{timestamp.to_i}"
       end
 
       def updated_timestamp_column
@@ -81,6 +81,7 @@ module Purview
 
       private
 
+      include Purview::Mixins::Helpers
       include Purview::Mixins::Logger
 
       attr_reader :opts

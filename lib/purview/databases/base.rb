@@ -13,10 +13,9 @@ module Purview
           unless tables.include?(table)
         table_name = table_name(table)
         with_context_logging("`baseline_table` for: #{table_name}") do
-          starting_timestamp = Time.now.utc
+          starting_timestamp = timestamp
           with_table_locked(table, starting_timestamp) do
             loop do
-              timestamp = Time.now.utc
               last_window = sync_table_without_lock(table, timestamp)
               break if last_window.max > starting_timestamp
             end
@@ -108,7 +107,7 @@ module Purview
         end
       end
 
-      def enable_table(table, timestamp=Time.now.utc)
+      def enable_table(table, timestamp=timestamp)
         table_name = table_name(table)
         with_context_logging("`enable_table` for: #{table_name}") do
           with_new_connection do |connection|
@@ -121,7 +120,7 @@ module Purview
         end
       end
 
-      def initialize_table(table, timestamp=Time.now.utc)
+      def initialize_table(table, timestamp=timestamp)
         table_name = table_name(table)
         with_context_logging("`initialize_table` for: #{table_name}") do
           with_new_connection do |connection|
@@ -134,7 +133,7 @@ module Purview
         end
       end
 
-      def lock_table(table, timestamp=Time.now.utc)
+      def lock_table(table, timestamp=timestamp)
         table_name = table_name(table)
         with_context_logging("`lock_table` for: #{table_name}") do
           with_new_connection do |connection|
@@ -149,9 +148,10 @@ module Purview
 
       def sync
         with_context_logging('`sync`') do
-          timestamp = Time.now.utc
-          with_next_table(timestamp) do |table|
-            sync_table_with_lock(table, timestamp)
+          with_timestamp do |timestamp|
+            with_next_table(timestamp) do |table|
+              sync_table_with_lock(table, timestamp)
+            end
           end
         end
       end
@@ -161,7 +161,6 @@ module Purview
           unless tables.include?(table)
         table_name = table_name(table)
         with_context_logging("`sync_table` for: #{table_name}") do
-          timestamp = Time.now.utc
           sync_table_with_lock(table, timestamp)
         end
       end

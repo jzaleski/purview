@@ -21,6 +21,14 @@ module Purview
         !blank?(value)
       end
 
+      def timestamp
+        Time.now
+      end
+
+      def with_timestamp
+        yield timestamp
+      end
+
       def zero?(value)
         Integer(value).zero?
       end
