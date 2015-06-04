@@ -2,7 +2,7 @@ module Purview
   module Mixins
     module Connection
       def connect
-        connection_type.new(connection_opts)
+        connection_type.connect(connection_opts)
       end
 
       def connection_opts
@@ -30,7 +30,7 @@ module Purview
       end
 
       def with_transaction(connection)
-        connection.with_transaction { yield connection }
+        connection.with_transaction { yield }
       end
     end
   end
