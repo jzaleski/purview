@@ -1,3 +1,10 @@
+Release 1.3.0
+-------------
+
+* Add support for easily adding additional indices + clean-up
+* DEPRECATION: `create_temporary_table` deprecated in favor of `create_table`
+  with the `temporary` option specified
+
 Release 1.2.0
 -------------
 
