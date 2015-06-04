@@ -5,12 +5,6 @@ module Purview
         new(opts)
       end
 
-      def self.with_new_connection(opts)
-        yield connection = connect(opts)
-      ensure
-        connection.disconnect if connection
-      end
-
       def initialize(opts)
         @opts = opts
         @raw_connection = new_connection

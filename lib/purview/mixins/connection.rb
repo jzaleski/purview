@@ -16,13 +16,21 @@ module Purview
       end
 
       def with_new_connection
-        connection_type.with_new_connection(connection_opts) { |connection| yield connection }
+        yield connection = connect
+      ensure
+        connection.disconnect if connection
       end
 
-      def with_new_transaction
-        with_new_connection do |connection|
-          connection.with_transaction { yield connection }
+      def with_new_or_existing_connection(opts={})
+        if existing_connection = opts[:connection]
+          yield existing_connection
+        else
+          with_new_connection { |connection| yield connection }
         end
+      end
+
+      def with_transaction(connection)
+        connection.with_transaction { yield connection }
       end
     end
   end

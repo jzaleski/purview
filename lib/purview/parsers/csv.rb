@@ -3,10 +3,10 @@ module Purview
     class CSV < Base
       def parse(data)
         with_context_logging("`parse` for: #{table.name}") do
-          [].tap do |results|
+          [].tap do |result|
             headers = extract_headers(data)
             extract_rows(data).each do |row|
-              results << build_result(headers.zip(row))
+              result << build_result(headers.zip(row))
             end
           end
         end

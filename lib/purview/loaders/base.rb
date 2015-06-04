@@ -38,10 +38,10 @@ module Purview
       end
 
       def create_temporary_table(connection)
-        database.create_temporary_table(
-          connection,
+        database.create_table(
           table,
-          :table => temporary_table_opts
+          :connection => connection,
+          :table => temporary_table_opts,
         )
       end
 
@@ -130,6 +130,7 @@ module Purview
         {
           :create_indices => true,
           :name => table.temporary_name,
+          :temporary => true,
         }
       end
 

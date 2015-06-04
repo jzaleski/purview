@@ -1,11 +1,16 @@
 module Purview
   module Tables
     class Base
-      attr_reader :database, :name
+      attr_reader :database, :indices, :name
 
       def initialize(name, opts={})
         @name = name
         @opts = opts
+        @indices = Set.new.tap do |result|
+          ((opts[:indices] || []) + default_indices).each do |index|
+            index.table = self if result.add?(index)
+          end
+        end
       end
 
       def columns
@@ -32,6 +37,10 @@ module Purview
         columns_of_type(Purview::Columns::CreatedTimestamp).first
       end
 
+      def created_timestamp_index
+        Purview::Indices::Simple.new(created_timestamp_column)
+      end
+
       def data_columns
         columns - [
           created_timestamp_column,
@@ -47,13 +56,6 @@ module Purview
 
       def id_column
         columns_of_type(Purview::Columns::Id).first
-      end
-
-      def indexed_columns
-        (opts[:indexed_columns] || []).tap do |indexed_columns|
-          indexed_columns << [created_timestamp_column]
-          indexed_columns << [updated_timestamp_column]
-        end
       end
 
       def sync(connection, window)
@@ -75,6 +77,10 @@ module Purview
         columns_of_type(Purview::Columns::UpdatedTimestamp).first
       end
 
+      def updated_timestamp_index
+        Purview::Indices::Simple.new(updated_timestamp_column)
+      end
+
       def window_size
         opts[:window_size] || (60 * 60)
       end
@@ -85,6 +91,13 @@ module Purview
       include Purview::Mixins::Logger
 
       attr_reader :opts
+
+      def default_indices
+        [
+          created_timestamp_index,
+          updated_timestamp_index,
+        ]
+      end
 
       def extract_type_option(opts)
         opts[:type]

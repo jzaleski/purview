@@ -7,11 +7,12 @@ module Purview
         Purview::Connections::PostgreSQL
       end
 
-      def create_index_sql(table_name, index_name, table, columns, index_opts={})
-        'CREATE INDEX %s ON %s (%s)' % [
+      def create_index_sql(table_name, index_name, index, index_opts={})
+        'CREATE%sINDEX %s ON %s (%s)' % [
+          index.unique? ? ' UNIQUE ' : ' ',
           index_name,
           table_name,
-          column_names(columns).join(', '),
+          column_names(index.columns).join(', '),
         ]
       end
 
@@ -44,7 +45,7 @@ module Purview
         ]
       end
 
-      def drop_index_sql(table_name, index_name, table, columns, index_opts={})
+      def drop_index_sql(table_name, index_name, index, index_opts={})
         'DROP INDEX %s' % [
           index_name,
         ]

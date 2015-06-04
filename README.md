@@ -38,12 +38,27 @@ Define the `Column(s)` (available column-types: `Boolean`, `CreatedTimestamp`,
 `UpdatedTimestamp` & `UUID` -- the `Id`, `CreatedTimestamp` & `UpdatedTimestamp`
 columns are required for all tables)
 ```ruby
+id_column = Purview::Columns::Id.new(:id),
+name_column = Purview::Columns::String.new(:name, :nullable => false),
+email_column = Purview::Columns::String.new(:email, :nullable => false, :limit => 100),
+created_at_column = Purview::Columns::CreatedTimestamp.new(:created_at),
+updated_at_column = Purview::Columns::UpdatedTimestamp.new(:updated_at),
+
 columns = [
-  Purview::Columns::Id.new(:id),
-  Purview::Columns::String.new(:name, :nullable => false),
-  Purview::Columns::String.new(:email, :nullable => false, :limit => 100),
-  Purview::Columns::CreatedTimestamp.new(:created_at),
-  Purview::Columns::UpdatedTimestamp.new(:updated_at),
+  id_column,
+  name_column,
+  email_column,
+  created_at_column,
+  updated_at_column,
+]
+```
+
+Define the `Indices` (availble index-types: `Composite` & `Simple`). By default
+`Indices` will be added for the required column-types (`CreatedTimestamp` &
+`UpdatedTimestamp`)
+```ruby
+indices = [
+  Purview::Indices::Simple.new(email_column),
 ]
 ```
 
@@ -73,6 +88,7 @@ Combine all the configuration options and instantiate the `Table`
 ```ruby
 table_opts = {
   :columns => columns,
+  :indices => indices,
   :loader => loader_opts,
   :parser => parser_opts,
   :puller => puller_opts,
