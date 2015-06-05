@@ -58,6 +58,7 @@
 * Create class to encapulate `table_metadata` (in order to clean up the logic
   in the `Database` and `TableMetadata` (struct) classes)
 * Further encapsulate `Dialect` logic (in order to DRY `Database` classes)
+* Add support for MSSQL
 
 * Build out change-log tables
 * Build out canonical, fact and aggregate tables (and related transforms)
