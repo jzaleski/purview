@@ -1,36 +1,41 @@
-Release 1.3.0
--------------
+Release 1.3.1 (2015-06-05)
+--------------------------
+
+* Add `table_metadata` helper to `Database` class
+
+Release 1.3.0 (2015-06-04)
+--------------------------
 
 * Add support for easily adding additional indices + clean-up
 * DEPRECATION: `create_temporary_table` deprecated in favor of `create_table`
   with the `temporary` option specified
 
-Release 1.2.0
--------------
+Release 1.2.0 (2015-06-03)
+--------------------------
 
 * Use system-time as opposed to assuming/forcing UTC time
 * Add `sync_table` helper to `Database` class
 * Eliminate explicit `return(s)` -- they were causing issues w/ `yield`
 
-Release 1.1.1
--------------
+Release 1.1.1 (2015-06-02)
+--------------------------
 
 * Add `baseline_table` helper to `Database` class
 
-Release 1.1.0
--------------
+Release 1.1.0 (2015-06-01)
+--------------------------
 
 * Change how `starting_timestamp` is configured
 * BUGFIX: Fix/standardize exception class/file names
 
-Release 1.0.1
--------------
+Release 1.0.1 (2015-05-29)
+--------------------------
 
 * Use consistent naming for database connection-opts (this allowed some DRYing)
 * OPPREF: Only update `table_metadata` when creating/dropping tables
 
-Release 1.0.0
--------------
+Release 1.0.0 (2015-05-28)
+--------------------------
 
 * Support on JRuby, MRI, and RBX for pulling, validating, parsing and loading
   CSV/TSV and SQL data (ETL)
