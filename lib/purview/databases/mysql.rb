@@ -88,13 +88,9 @@ module Purview
       end
 
       def ensure_table_metadata_table_exists_sql
-        'CREATE TABLE IF NOT EXISTS %s (%s PRIMARY KEY, %s, %s, %s, %s)' % [
+        'CREATE TABLE IF NOT EXISTS %s (%s)' % [
           table_metadata_table_name,
-          table_metadata_table_name_column_definition,
-          table_metadata_enabled_at_column_definition,
-          table_metadata_last_pulled_at_column_definition,
-          table_metadata_locked_at_column_definition,
-          table_metadata_max_timestamp_pulled_column_definition,
+          table_metadata_column_definitions.join(', '),
         ]
       end
 
@@ -207,6 +203,15 @@ module Purview
           table_metadata_table_name,
           table_metadata_max_timestamp_pulled_column_name,
           quoted(timestamp),
+          table_metadata_table_name_column_name,
+          quoted(table.name),
+        ]
+      end
+
+      def table_metadata_sql(table)
+        'SELECT %s FROM %s WHERE %s = %s' % [
+          table_metadata_column_names.join(', '),
+          table_metadata_table_name,
           table_metadata_table_name_column_name,
           quoted(table.name),
         ]

@@ -55,15 +55,17 @@
 
 * Add COPY `def copy(sql)` support to PostgreSQL connection
 * Leverage COPY support for PostgreSQL pulls
-* Create class to encapulate `table_metadata` logic
-* Further encapsulate `Dialect` logic
+* Create class to encapulate `table_metadata` (in order to clean up the logic
+  in the `Database` and `TableMetadata` (struct) classes)
+* Further encapsulate `Dialect` logic (in order to DRY `Database` classes)
+
 * Build out change-log tables
 * Build out canonical, fact and aggregate tables (and related transforms)
 * Configurable re-pull window (do this automatically once up to current?)
 * Add schema management capabilities (detect schema-deltas and suggestion
   modifications)
-* Refactor mutator methods to be globally available (e.g. coalesced -> Coalesce,
-  quoted -> Quote, etc.)
+* Consider refactoring mutator methods to be globally available (e.g. coalesced
+  -> Coalesce, quoted -> Quote, etc.)
 
 ... CLOSED QUESTIONS ...
 

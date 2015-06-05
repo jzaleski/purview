@@ -207,6 +207,21 @@ module Purview
         table_name
       end
 
+      def table_metadata(table)
+        ensure_table_valid_for_database(table)
+        table_metadata = nil
+        table_name = table_name(table)
+        with_context_logging("`table_metadata` for: #{table_name}") do
+          with_new_connection do |connection|
+            row = connection.execute(table_metadata_sql(table)).rows.first
+            raise Purview::Exceptions::CouldNotFindTableMetadata.new(table) \
+              unless row
+            table_metadata = Purview::Structs::TableMetadata.new(row)
+          end
+        end
+        table_metadata
+      end
+
       def unlock_table(table)
         ensure_table_valid_for_database(table)
         table_name = table_name(table)
@@ -576,53 +591,96 @@ module Purview
         end
       end
 
-      def table_unlocked?(table)
-        !table_locked?(table)
+      def table_metadata_column_definitions
+        [
+          table_metadata_table_name_column_definition,
+          table_metadata_enabled_at_column_definition,
+          table_metadata_last_pulled_at_column_definition,
+          table_metadata_locked_at_column_definition,
+          table_metadata_max_timestamp_pulled_column_definition,
+        ]
+      end
+
+      def table_metadata_column_names
+        table_metadata_columns.map(&:name)
+      end
+
+      def table_metadata_columns
+        [
+          table_metadata_table_name_column,
+          table_metadata_enabled_at_column,
+          table_metadata_last_pulled_at_column,
+          table_metadata_locked_at_column,
+          table_metadata_max_timestamp_pulled_column,
+        ]
+      end
+
+      def table_metadata_enabled_at_column
+        Purview::Columns::Timestamp.new(table_metadata_enabled_at_column_name)
       end
 
       def table_metadata_enabled_at_column_definition
-        column = Purview::Columns::Timestamp.new(table_metadata_enabled_at_column_name)
-        column_definition(column)
+        column_definition(table_metadata_enabled_at_column)
       end
 
       def table_metadata_enabled_at_column_name
         'enabled_at'
       end
 
+      def table_metadata_last_pulled_at_column
+        Purview::Columns::Timestamp.new(table_metadata_last_pulled_at_column_name)
+      end
+
       def table_metadata_last_pulled_at_column_definition
-        column = Purview::Columns::Timestamp.new(table_metadata_last_pulled_at_column_name)
-        column_definition(column)
+        column_definition(table_metadata_last_pulled_at_column)
       end
 
       def table_metadata_last_pulled_at_column_name
         'last_pulled_at'
       end
 
+      def table_metadata_locked_at_column
+        Purview::Columns::Timestamp.new(table_metadata_locked_at_column_name)
+      end
+
       def table_metadata_locked_at_column_definition
-        column = Purview::Columns::Timestamp.new(table_metadata_locked_at_column_name)
-        column_definition(column)
+        column_definition(table_metadata_locked_at_column)
       end
 
       def table_metadata_locked_at_column_name
         'locked_at'
       end
 
+      def table_metadata_max_timestamp_pulled_column
+        Purview::Columns::Timestamp.new(table_metadata_max_timestamp_pulled_column_name)
+      end
+
       def table_metadata_max_timestamp_pulled_column_definition
-        column = Purview::Columns::Timestamp.new(table_metadata_max_timestamp_pulled_column_name)
-        column_definition(column)
+        column_definition(table_metadata_max_timestamp_pulled_column)
       end
 
       def table_metadata_max_timestamp_pulled_column_name
         'max_timestamp_pulled'
       end
 
+      def table_metadata_sql(table)
+        raise %{All "#{Base}(s)" must override the "table_metadata_sql" method}
+      end
+
       def table_metadata_table_name
         'table_metadata'
       end
 
+      def table_metadata_table_name_column
+        Purview::Columns::Id.new(
+          table_metadata_table_name_column_name,
+          :type => Purview::Types::String,
+          :limit => 255,
+        )
+      end
+
       def table_metadata_table_name_column_definition
-        column = Purview::Columns::String.new(table_metadata_table_name_column_name)
-        column_definition(column)
+        column_definition(table_metadata_table_name_column)
       end
 
       def table_metadata_table_name_column_name
@@ -631,6 +689,10 @@ module Purview
 
       def table_name(table, table_opts={})
         table_opts[:name] || table.name
+      end
+
+      def table_unlocked?(table)
+        !table_locked?(table)
       end
 
       def tables_by_name
