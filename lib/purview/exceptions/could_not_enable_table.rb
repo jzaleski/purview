@@ -1,6 +1,6 @@
 module Purview
   module Exceptions
-    class CouldNotEnable < BaseTable
+    class CouldNotEnableTable < BaseTable
       def message
         "Could not enable table: #{table.name}"
       end

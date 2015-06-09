@@ -1,6 +1,6 @@
 module Purview
   module Exceptions
-    class TableAlreadyAssigned < Base
+    class TableAlreadyAssignedForIndex < Base
       def initialize(index)
         @index = index
       end

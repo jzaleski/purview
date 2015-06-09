@@ -1,6 +1,6 @@
 module Purview
   module Exceptions
-    class CouldNotLock < BaseTable
+    class CouldNotLockTable < BaseTable
       def message
         "Could not lock table: #{table.name}"
       end

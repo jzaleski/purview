@@ -12,7 +12,7 @@ module Purview
           index.unique? ? ' UNIQUE ' : ' ',
           index_name,
           table_name,
-          column_names(index.columns).join(', '),
+          column_names(index).join(', '),
         ]
       end
 
@@ -36,12 +36,12 @@ module Purview
 
       def disable_table_sql(table)
         'UPDATE %s SET %s = %s WHERE %s = %s AND %s IS NOT NULL' % [
-          table_metadata_table_name,
-          table_metadata_enabled_at_column_name,
+          table_metadata_table.name,
+          table_metadata_table.enabled_at_column.name,
           null_value,
-          table_metadata_table_name_column_name,
+          table_metadata_table.table_name_column.name,
           quoted(table.name),
-          table_metadata_enabled_at_column_name,
+          table_metadata_table.enabled_at_column.name,
         ]
       end
 
@@ -59,84 +59,57 @@ module Purview
 
       def enable_table_sql(table, timestamp)
         'UPDATE %s SET %s = %s WHERE %s = %s AND %s IS NULL' % [
-          table_metadata_table_name,
-          table_metadata_enabled_at_column_name,
+          table_metadata_table.name,
+          table_metadata_table.enabled_at_column.name,
           quoted(timestamp),
-          table_metadata_table_name_column_name,
+          table_metadata_table.table_name_column.name,
           quoted(table.name),
-          table_metadata_enabled_at_column_name,
+          table_metadata_table.enabled_at_column.name,
         ]
       end
 
       def ensure_table_metadata_absent_for_table_sql(table)
         'DELETE FROM %s WHERE %s = %s' % [
-          table_metadata_table_name,
-          table_metadata_table_name_column_name,
+          table_metadata_table.name,
+          table_metadata_table.table_name_column.name,
           quoted(table.name),
         ]
       end
 
       def ensure_table_metadata_exists_for_table_sql(table)
         'INSERT INTO %s (%s) SELECT %s WHERE NOT EXISTS (SELECT 1 FROM %s WHERE %s = %s)' % [
-          table_metadata_table_name,
-          table_metadata_table_name_column_name,
+          table_metadata_table.name,
+          table_metadata_table.table_name_column.name,
           quoted(table.name),
-          table_metadata_table_name,
-          table_metadata_table_name_column_name,
+          table_metadata_table.name,
+          table_metadata_table.table_name_column.name,
           quoted(table.name),
         ]
       end
 
       def ensure_table_metadata_table_exists_sql
         'CREATE TABLE IF NOT EXISTS %s (%s)' % [
-          table_metadata_table_name,
-          table_metadata_column_definitions.join(', '),
+          table_metadata_table.name,
+          column_definitions(table_metadata_table).join(', '),
         ]
       end
 
       def initialize_table_sql(table, timestamp)
         'UPDATE %s SET %s = %s WHERE %s = %s AND %s IS NULL' % [
-          table_metadata_table_name,
-          table_metadata_max_timestamp_pulled_column_name,
+          table_metadata_table.name,
+          table_metadata_table.max_timestamp_pulled_column.name,
           quoted(timestamp),
-          table_metadata_table_name_column_name,
+          table_metadata_table.table_name_column.name,
           quoted(table.name),
-          table_metadata_max_timestamp_pulled_column_name,
+          table_metadata_table.max_timestamp_pulled_column.name,
         ]
       end
 
-      def get_enabled_at_for_table_sql(table)
+      def get_table_metadata_value_sql(table, column)
         'SELECT %s FROM %s WHERE %s = %s' % [
-          table_metadata_enabled_at_column_name,
-          table_metadata_table_name,
-          table_metadata_table_name_column_name,
-          quoted(table.name),
-        ]
-      end
-
-      def get_last_pulled_at_for_table_sql(table)
-        'SELECT %s FROM %s WHERE %s = %s' % [
-          table_metadata_last_pulled_at_column_name,
-          table_metadata_table_name,
-          table_metadata_table_name_column_name,
-          quoted(table.name),
-        ]
-      end
-
-      def get_locked_at_for_table_sql(table)
-        'SELECT %s FROM %s WHERE %s = %s' % [
-          table_metadata_locked_at_column_name,
-          table_metadata_table_name,
-          table_metadata_table_name_column_name,
-          quoted(table.name),
-        ]
-      end
-
-      def get_max_timestamp_pulled_for_table_sql(table)
-        'SELECT %s FROM %s WHERE %s = %s' % [
-          table_metadata_max_timestamp_pulled_column_name,
-          table_metadata_table_name,
-          table_metadata_table_name_column_name,
+          column.name,
+          table_metadata_table.name,
+          table_metadata_table.table_name_column.name,
           quoted(table.name),
         ]
       end
@@ -150,72 +123,33 @@ module Purview
 
       def lock_table_sql(table, timestamp)
         'UPDATE %s SET %s = %s WHERE %s = %s AND %s IS NULL' % [
-          table_metadata_table_name,
-          table_metadata_locked_at_column_name,
+          table_metadata_table.name,
+          table_metadata_table.locked_at_column.name,
           quoted(timestamp),
-          table_metadata_table_name_column_name,
+          table_metadata_table.table_name_column.name,
           quoted(table.name),
-          table_metadata_locked_at_column_name,
+          table_metadata_table.locked_at_column.name,
         ]
       end
 
       def next_table_sql(timestamp)
         'SELECT %s FROM %s WHERE %s IS NOT NULL AND %s IS NOT NULL AND %s IS NULL ORDER BY %s IS NULL DESC, %s LIMIT 1' % [
-          table_metadata_table_name_column_name,
-          table_metadata_table_name,
-          table_metadata_enabled_at_column_name,
-          table_metadata_max_timestamp_pulled_column_name,
-          table_metadata_locked_at_column_name,
-          table_metadata_last_pulled_at_column_name,
-          table_metadata_last_pulled_at_column_name,
+          table_metadata_table.table_name_column.name,
+          table_metadata_table.name,
+          table_metadata_table.enabled_at_column.name,
+          table_metadata_table.max_timestamp_pulled_column.name,
+          table_metadata_table.locked_at_column.name,
+          table_metadata_table.last_pulled_at_column.name,
+          table_metadata_table.last_pulled_at_column.name,
         ]
       end
 
-      def set_enabled_at_for_table_sql(table, timestamp)
-        'UPDATE %s SET %s = %s WHERE %s = %s AND %s' % [
-          table_metadata_table_name,
-          table_metadata_enabled_at_column_name,
-          quoted(timestamp),
-          table_metadata_table_name_column_name,
-          quoted(table.name),
-        ]
-      end
-
-      def set_last_pulled_at_for_table_sql(table, timestamp)
+      def set_table_metadata_value_sql(table, column, value)
         'UPDATE %s SET %s = %s WHERE %s = %s' % [
-          table_metadata_table_name,
-          table_metadata_last_pulled_at_column_name,
-          quoted(timestamp),
-          table_metadata_table_name_column_name,
-          quoted(table.name),
-        ]
-      end
-
-      def set_locked_at_for_table_sql(table, timestamp)
-        'UPDATE %s SET %s = %s WHERE %s = %s AND %s' % [
-          table_metadata_table_name,
-          table_metadata_locked_at_column_name,
-          quoted(timestamp),
-          table_metadata_table_name_column_name,
-          quoted(table.name),
-        ]
-      end
-
-      def set_max_timestamp_pulled_for_table_sql(table, timestamp)
-        'UPDATE %s SET %s = %s WHERE %s = %s' % [
-          table_metadata_table_name,
-          table_metadata_max_timestamp_pulled_column_name,
-          quoted(timestamp),
-          table_metadata_table_name_column_name,
-          quoted(table.name),
-        ]
-      end
-
-      def table_metadata_sql(table)
-        'SELECT %s FROM %s WHERE %s = %s' % [
-          table_metadata_column_names.join(', '),
-          table_metadata_table_name,
-          table_metadata_table_name_column_name,
+          table_metadata_table.name,
+          column.name,
+          quoted(value),
+          table_metadata_table.table_name_column.name,
           quoted(table.name),
         ]
       end
@@ -229,12 +163,12 @@ module Purview
 
       def unlock_table_sql(table)
         'UPDATE %s SET %s = %s WHERE %s = %s AND %s IS NOT NULL' % [
-          table_metadata_table_name,
-          table_metadata_locked_at_column_name,
+          table_metadata_table.name,
+          table_metadata_table.locked_at_column.name,
           null_value,
-          table_metadata_table_name_column_name,
+          table_metadata_table.table_name_column.name,
           quoted(table.name),
-          table_metadata_locked_at_column_name,
+          table_metadata_table.locked_at_column.name,
         ]
       end
     end

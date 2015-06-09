@@ -44,6 +44,8 @@
 * Introduce [SQL] dialect(s)
 * Fix JRuby bundle/build
 * Fall back to logged in user if no [database-]username is provided
+* Create class to encapulate `table_metadata` (in order to clean up the logic
+  in the `Database` class(es))
 
 ... ONGOING TASKS ...
 
@@ -53,10 +55,11 @@
 
 ... OPEN TASKS ....
 
+* Rename columns during pull/parse `source_name` & `target_name` perhaps? Maybe
+  create a new type of column?
+
 * Add COPY `def copy(sql)` support to PostgreSQL connection
 * Leverage COPY support for PostgreSQL pulls
-* Create class to encapulate `table_metadata` (in order to clean up the logic
-  in the `Database` and `TableMetadata` (struct) classes)
 * Further encapsulate `Dialect` logic (in order to DRY `Database` classes)
 * Add support for MSSQL
 
@@ -80,8 +83,6 @@
 ... OPEN QUESTIONS ...
 
 * Parallel pulls from the same "source"? Can this be done in one request?
-* Rename columns during pull/parse `source_name` & `target_name` perhaps? Maybe
-  create a new type of column?
 
 ... INTEGRATION CONSIDERATIONS ...
 

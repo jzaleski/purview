@@ -6,6 +6,7 @@ module Purview
       def initialize(columns, opts={})
         @columns = columns
         @opts = opts
+        @table = table_option
       end
 
       def eql?(other)
@@ -19,7 +20,7 @@ module Purview
       end
 
       def table=(value)
-        raise Purview::Exceptions::TableAlreadyAssigned.new(self) if table
+        raise Purview::Exceptions::TableAlreadyAssignedForIndex.new(self) if table
         @table = value
       end
 
@@ -34,6 +35,10 @@ module Purview
       private
 
       attr_reader :opts
+
+      def table_option
+        opts[:table]
+      end
     end
   end
 end

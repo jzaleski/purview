@@ -1,6 +1,6 @@
 module Purview
   module Exceptions
-    class CouldNotSync < BaseTable
+    class CouldNotSyncTable < BaseTable
       def message
         "Could not sync table: #{table.name}"
       end

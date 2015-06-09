@@ -28,6 +28,7 @@ module Purview
 
       private
 
+      include Purview::Mixins::Dialect
       include Purview::Mixins::Helpers
       include Purview::Mixins::Logger
 
@@ -49,16 +50,8 @@ module Purview
         table.database
       end
 
-      def dialect
-        dialect_type.new
-      end
-
       def dialect_type
         raise %{All "#{Base}(s)" must override the "dialect_type" method}
-      end
-
-      def false_value
-        dialect.false_value
       end
 
       def id_in_sql(temporary_table_name)
@@ -86,24 +79,12 @@ module Purview
         raise %{All "#{Base}(s)" must override the "not_in_window_sql" method}
       end
 
-      def null_value
-        dialect.null_value
-      end
-
-      def quoted(value)
-        dialect.quoted(value)
-      end
-
       def row_values(row)
         table.column_names.map { |column_name| quoted(sanitized(row[column_name])) }.join(', ')
       end
 
       def rows_per_slice
         opts[:rows_per_slice] || 1000
-      end
-
-      def sanitized(value)
-        dialect.sanitized(value)
       end
 
       def table
@@ -138,10 +119,6 @@ module Purview
         raise %{All "#{Base}(s)" must override the "temporary_table_verify_sql" method}
       end
 
-      def true_value
-        dialect.true_value
-      end
-
       def verify_temporary_table(connection, temporary_table_name, rows, window)
         with_context_logging("`verify_temporary_table` for: #{temporary_table_name}") do
           rows_outside_window = connection.execute(
@@ -151,7 +128,7 @@ module Purview
               window
             )
           ).rows[0][count_column_name]
-          raise Purview::Exceptions::RowsOutsideWindow.new(temporary_table_name, rows_outside_window) \
+          raise Purview::Exceptions::RowsOutsideWindowForTable.new(table, rows_outside_window) \
             unless zero?(rows_outside_window)
         end
       end

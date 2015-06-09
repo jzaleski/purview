@@ -1,6 +1,6 @@
 module Purview
   module Exceptions
-    class CouldNotInitialize < BaseTable
+    class CouldNotInitializeTable < BaseTable
       def message
         "Could not initialize table: #{table.name}"
       end

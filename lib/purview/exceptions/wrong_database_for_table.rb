@@ -1,6 +1,6 @@
 module Purview
   module Exceptions
-    class WrongDatabase < BaseTable
+    class WrongDatabaseForTable < BaseTable
       def message
         "Wrong database for table: #{table.name}"
       end

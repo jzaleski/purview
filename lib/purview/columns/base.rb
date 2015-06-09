@@ -1,11 +1,12 @@
 module Purview
   module Columns
     class Base
-      attr_reader :name
+      attr_reader :name, :table
 
       def initialize(name, opts={})
         @name = name.to_sym
         @opts = default_opts.merge(opts)
+        @table = table_option
       end
 
       def default
@@ -14,6 +15,24 @@ module Purview
 
       def default?
         !!default
+      end
+
+      def eql?(other)
+        self.class == other.class &&
+          limit == other.limit &&
+          name == other.name &&
+          nullable == other.nullable &&
+          primary_key == other.primary_key &&
+          type == other.type
+      end
+
+      def hash
+        default.hash +
+          limit.hash +
+          name.hash +
+          nullable.hash +
+          primary_key.hash +
+          type.hash
       end
 
       def limit
@@ -46,6 +65,11 @@ module Purview
         !!primary_key
       end
 
+      def table=(value)
+        raise Purview::Exceptions::TableAlreadyAssignedForColumn.new(self) if table
+        @table = value
+      end
+
       def type
         coalesced(opts[:type], Purview::Types::String)
       end
@@ -58,6 +82,10 @@ module Purview
 
       def default_opts
         {}
+      end
+
+      def table_option
+        opts[:table]
       end
     end
   end

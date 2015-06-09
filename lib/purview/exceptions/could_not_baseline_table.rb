@@ -1,6 +1,6 @@
 module Purview
   module Exceptions
-    class CouldNotBaseline < BaseTable
+    class CouldNotBaselineTable < BaseTable
       def message
         "Could not baseline table: #{table.name}"
       end

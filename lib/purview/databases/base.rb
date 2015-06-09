@@ -7,7 +7,7 @@ module Purview
         @name = name
         @opts = opts
         @tables = Set.new.tap do |result|
-          (opts[:tables] || []).each do |table|
+          (default_tables + tables_option).each do |table|
             table.database = self if result.add?(table)
           end
         end
@@ -15,7 +15,7 @@ module Purview
 
       def baseline_table(table)
         ensure_table_valid_for_database(table)
-        raise Purview::Exceptions::CouldNotBaseline.new(table) \
+        raise Purview::Exceptions::CouldNotBaselineTable.new(table) \
           unless table_initialized?(table)
         table_name = table_name(table)
         with_context_logging("`baseline_table` for: #{table_name}") do
@@ -35,10 +35,9 @@ module Purview
         table_opts = extract_table_options(opts)
         table_name = table_name(index.table, table_opts)
         index_opts = extract_index_options(opts)
-        index_columns = index.columns
         index_name = index_name(
           table_name,
-          index_columns,
+          index,
           index_opts
         )
         with_context_logging("`create_index` for: #{index_name}") do
@@ -92,7 +91,7 @@ module Purview
           with_new_connection do |connection|
             rows_affected = \
               connection.execute(disable_table_sql(table)).rows_affected
-            raise Purview::Exceptions::CouldNotDisable.new(table) \
+            raise Purview::Exceptions::CouldNotDisableTable.new(table) \
               if zero?(rows_affected)
           end
         end
@@ -104,10 +103,9 @@ module Purview
         table_opts = extract_table_options(opts)
         table_name = table_name(index.table, table_opts)
         index_opts = extract_index_options(opts)
-        index_columns = index.columns
         index_name = index_name(
           table_name,
-          index_columns,
+          index,
           index_opts
         )
         with_context_logging("`drop_index` for: #{index_name}") do
@@ -151,7 +149,7 @@ module Purview
           with_new_connection do |connection|
             rows_affected = \
               connection.execute(enable_table_sql(table, timestamp)).rows_affected
-            raise Purview::Exceptions::CouldNotEnable.new(table) \
+            raise Purview::Exceptions::CouldNotEnableTable.new(table) \
               if zero?(rows_affected)
           end
         end
@@ -165,7 +163,7 @@ module Purview
           with_new_connection do |connection|
             rows_affected = \
               connection.execute(initialize_table_sql(table, timestamp)).rows_affected
-            raise Purview::Exceptions::CouldNotInitialize.new(table) \
+            raise Purview::Exceptions::CouldNotInitializeTable.new(table) \
               if zero?(rows_affected)
           end
         end
@@ -179,7 +177,7 @@ module Purview
           with_new_connection do |connection|
             rows_affected = \
               connection.execute(lock_table_sql(table, timestamp)).rows_affected
-            raise Purview::Exceptions::CouldNotLock.new(table) \
+            raise Purview::Exceptions::CouldNotLockTable.new(table) \
               if zero?(rows_affected)
           end
         end
@@ -198,7 +196,7 @@ module Purview
 
       def sync_table(table)
         ensure_table_valid_for_database(table)
-        raise Purview::Exceptions::CouldNotSync.new(table) \
+        raise Purview::Exceptions::CouldNotSyncTable.new(table) \
           unless table_initialized?(table) && table_enabled?(table)
         table_name = table_name(table)
         with_context_logging("`sync_table` for: #{table_name}") do
@@ -213,10 +211,16 @@ module Purview
         table_name = table_name(table)
         with_context_logging("`table_metadata` for: #{table_name}") do
           with_new_connection do |connection|
-            row = connection.execute(table_metadata_sql(table)).rows.first
-            raise Purview::Exceptions::CouldNotFindTableMetadata.new(table) \
-              unless row
-            table_metadata = Purview::Structs::TableMetadata.new(row)
+            Purview::Structs::TableMetadata.new(
+              table_metadata_table.columns.reduce({}) do |memo, column|
+                memo[column.name] = get_table_metadata_value(
+                  connection,
+                  table,
+                  column
+                )
+                memo
+              end
+            )
           end
         end
         table_metadata
@@ -229,7 +233,7 @@ module Purview
           with_new_connection do |connection|
             rows_affected = \
               connection.execute(unlock_table_sql(table)).rows_affected
-            raise Purview::Exceptions::CouldNotUnlock.new(table) \
+            raise Purview::Exceptions::CouldNotUnlockTable.new(table) \
               if zero?(rows_affected)
           end
         end
@@ -239,6 +243,7 @@ module Purview
       private
 
       include Purview::Mixins::Connection
+      include Purview::Mixins::Dialect
       include Purview::Mixins::Helpers
       include Purview::Mixins::Logger
 
@@ -261,19 +266,12 @@ module Purview
         end
       end
 
-      def column_names(columns)
-        columns.map(&:name)
+      def column_names(index_or_table)
+        index_or_table.columns.map(&:name)
       end
 
-      def column_definitions(table)
-        [].tap do |result|
-          result << column_definition(table.id_column)
-          result << column_definition(table.created_timestamp_column)
-          result << column_definition(table.updated_timestamp_column)
-          table.data_columns.each do |column|
-            result << column_definition(column)
-          end
-        end
+      def column_definitions(index_or_table)
+        index_or_table.columns.map { |column| column_definition(column) }
       end
 
       def connection_type
@@ -324,8 +322,8 @@ module Purview
         {}
       end
 
-      def dialect
-        dialect_type.new
+      def default_tables
+        []
       end
 
       def dialect_type
@@ -383,7 +381,7 @@ module Purview
       def ensure_table_valid_for_database(table)
         raise ArgumentError.new('Must provide a `Table`') \
           unless table
-        raise Purview::Exceptions::WrongDatabase.new(table) \
+        raise Purview::Exceptions::WrongDatabaseForTable.new(table) \
           unless tables.include?(table)
       end
 
@@ -395,54 +393,18 @@ module Purview
         opts[:table] || { :create_indices => true }
       end
 
-      def false_value
-        dialect.false_value
+      def get_table_metadata_value(connection, table, column)
+        row = connection.execute(get_table_metadata_value_sql(table, column)).rows[0]
+        raise CouldNotFindMetadataForTable.new(table) \
+          unless row
+        value = row[column.name]
+        value && column.type.parse(value)
       end
 
-      def get_enabled_at_for_table(connection, table)
-        row = connection.execute(get_enabled_at_for_table_sql(table)).rows[0]
-        timestamp = row[table_metadata_enabled_at_column_name]
-        timestamp ? Time.parse(timestamp) : nil
-      end
-
-      def get_enabled_at_for_table_sql(table)
-        raise %{All "#{Base}(s)" must override the "get_enabled_at_for_table_sql" method}
-      end
-
-      def get_last_pulled_at_for_table(connection, table)
-        row = connection.execute(get_last_pulled_at_for_table_sql(table)).rows[0]
-        timestamp = row[table_metadata_last_pulled_at_column_name]
-        timestamp ? Time.parse(timestamp) : nil
-      end
-
-      def get_last_pulled_at_for_table_sql(table)
-        raise %{All "#{Base}(s)" must override the "get_last_pulled_at_for_table_sql" method}
-      end
-
-      def get_locked_at_for_table(connection, table)
-        row = connection.execute(get_locked_at_for_table_sql(table)).rows[0]
-        timestamp = row[table_metadata_locked_at_column_name]
-        timestamp ? Time.parse(timestamp) : nil
-      end
-
-      def get_locked_at_for_table_sql(table)
-        raise %{All "#{Base}(s)" must override the "get_locked_at_for_table_sql" method}
-      end
-
-      def get_max_timestamp_pulled_for_table(connection, table)
-        row = connection.execute(get_max_timestamp_pulled_for_table_sql(table)).rows[0]
-        timestamp = row[table_metadata_max_timestamp_pulled_column_name]
-        timestamp ? Time.parse(timestamp) : nil
-      end
-
-      def get_max_timestamp_pulled_for_table_sql(table)
-        raise %{All "#{Base}(s)" must override the "get_max_timestamp_pulled_for_table_sql" method}
-      end
-
-      def index_name(table_name, columns, index_opts={})
+      def index_name(table_name, index, index_opts={})
         index_opts[:name] || 'index_%s_on_%s' % [
           table_name,
-          column_names(columns).join('_and_'),
+          column_names(index).join('_and_'),
         ]
       end
 
@@ -468,8 +430,8 @@ module Purview
 
       def next_table(connection, timestamp)
         row = connection.execute(next_table_sql(timestamp)).rows[0]
-        table_name = row && row[table_metadata_table_name_column_name]
-        table_name && tables_by_name[table_name]
+        value = row && row[table_metadata_table.table_name_column.name]
+        value && table_metadata_table.table_name_column.type.parse(value)
       end
 
       def next_table_sql(timestamp)
@@ -477,17 +439,17 @@ module Purview
       end
 
       def next_window(connection, table, timestamp)
-        min = get_max_timestamp_pulled_for_table(connection, table)
+        min = get_table_metadata_value(
+          connection,
+          table,
+          table_metadata_table.max_timestamp_pulled_column
+        )
         max = min + table.window_size
         now = timestamp
         min > now ? nil : Purview::Structs::Window.new(
           :min => min,
           :max => max > now ? now : max
         )
-      end
-
-      def null_value
-        dialect.null_value
       end
 
       def nullable?(column)
@@ -498,44 +460,11 @@ module Purview
         column.primary_key?
       end
 
-      def quoted(value)
-        dialect.quoted(value)
-      end
-
-      def sanitized(value)
-        dialect.sanitized(value)
-      end
-
-      def set_enabled_at_for_table(connection, table, timestamp)
-        connection.execute(set_enabled_at_for_table_sql(table, timestamp))
-      end
-
-      def set_enabled_at_for_table_sql(table, timestamp)
-        raise %{All "#{Base}(s)" must override the "set_enabled_at_for_table_sql" method}
-      end
-
-      def set_last_pulled_at_for_table(connection, table, timestamp)
-        connection.execute(set_last_pulled_at_for_table_sql(table, timestamp))
-      end
-
-      def set_last_pulled_at_for_table_sql(table, timestamp)
-        raise %{All "#{Base}(s)" must override the "set_last_pulled_at_for_table_sql" method}
-      end
-
-      def set_locked_at_for_table(connection, table, timestamp)
-        connection.execute(set_locked_at_for_table_sql(table, timestamp))
-      end
-
-      def set_locked_at_for_table_sql(table, timestamp)
-        raise %{All "#{Base}(s)" must override the "set_locked_at_for_table_sql" method}
-      end
-
-      def set_max_timestamp_pulled_for_table(connection, table, timestamp)
-        connection.execute(set_max_timestamp_pulled_for_table_sql(table, timestamp))
-      end
-
-      def set_max_timestamp_pulled_for_table_sql(table, timestamp)
-        raise %{All "#{Base}(s)" must override the "set_max_timestamp_pulled_for_table_sql" method}
+      def set_table_metadata_value(connection, table, column, value)
+        rows_affected = \
+          connection.execute(set_table_metadata_value_sql(table, column, value)).rows_affected
+        raise CouldNotUpdateMetadataForTable.new(table) \
+          if zero?(rows_affected)
       end
 
       def sync_table_with_lock(table, timestamp)
@@ -552,14 +481,16 @@ module Purview
           with_new_connection do |connection|
             with_transaction(connection) do
               table.sync(connection, window)
-              set_last_pulled_at_for_table(
+              set_table_metadata_value(
                 connection,
                 table,
+                table_metadata_table.last_pulled_at_column,
                 timestamp
               )
-              set_max_timestamp_pulled_for_table(
+              set_table_metadata_value(
                 connection,
                 table,
+                table_metadata_table.max_timestamp_pulled_column,
                 window.max
               )
               last_window = window
@@ -575,116 +506,36 @@ module Purview
 
       def table_enabled?(table)
         with_new_connection do |connection|
-          !!get_enabled_at_for_table(connection, table)
+          !!get_table_metadata_value(
+              connection,
+              table,
+              table_metadata_table.enabled_at_column
+            )
         end
       end
 
       def table_initialized?(table)
         with_new_connection do |connection|
-          !!get_max_timestamp_pulled_for_table(connection, table)
+          !!get_table_metadata_value(
+              connection,
+              table,
+              table_metadata_table.max_timestamp_pulled_column
+            )
         end
       end
 
       def table_locked?(table)
         with_new_connection do |connection|
-          !!get_locked_at_for_table(connection, table)
+          !!get_table_metadata_value(
+              connection,
+              table,
+              table_metadata_table.locked_at_column
+            )
         end
       end
 
-      def table_metadata_column_definitions
-        [
-          table_metadata_table_name_column_definition,
-          table_metadata_enabled_at_column_definition,
-          table_metadata_last_pulled_at_column_definition,
-          table_metadata_locked_at_column_definition,
-          table_metadata_max_timestamp_pulled_column_definition,
-        ]
-      end
-
-      def table_metadata_column_names
-        table_metadata_columns.map(&:name)
-      end
-
-      def table_metadata_columns
-        [
-          table_metadata_table_name_column,
-          table_metadata_enabled_at_column,
-          table_metadata_last_pulled_at_column,
-          table_metadata_locked_at_column,
-          table_metadata_max_timestamp_pulled_column,
-        ]
-      end
-
-      def table_metadata_enabled_at_column
-        Purview::Columns::Timestamp.new(table_metadata_enabled_at_column_name)
-      end
-
-      def table_metadata_enabled_at_column_definition
-        column_definition(table_metadata_enabled_at_column)
-      end
-
-      def table_metadata_enabled_at_column_name
-        'enabled_at'
-      end
-
-      def table_metadata_last_pulled_at_column
-        Purview::Columns::Timestamp.new(table_metadata_last_pulled_at_column_name)
-      end
-
-      def table_metadata_last_pulled_at_column_definition
-        column_definition(table_metadata_last_pulled_at_column)
-      end
-
-      def table_metadata_last_pulled_at_column_name
-        'last_pulled_at'
-      end
-
-      def table_metadata_locked_at_column
-        Purview::Columns::Timestamp.new(table_metadata_locked_at_column_name)
-      end
-
-      def table_metadata_locked_at_column_definition
-        column_definition(table_metadata_locked_at_column)
-      end
-
-      def table_metadata_locked_at_column_name
-        'locked_at'
-      end
-
-      def table_metadata_max_timestamp_pulled_column
-        Purview::Columns::Timestamp.new(table_metadata_max_timestamp_pulled_column_name)
-      end
-
-      def table_metadata_max_timestamp_pulled_column_definition
-        column_definition(table_metadata_max_timestamp_pulled_column)
-      end
-
-      def table_metadata_max_timestamp_pulled_column_name
-        'max_timestamp_pulled'
-      end
-
-      def table_metadata_sql(table)
-        raise %{All "#{Base}(s)" must override the "table_metadata_sql" method}
-      end
-
-      def table_metadata_table_name
-        'table_metadata'
-      end
-
-      def table_metadata_table_name_column
-        Purview::Columns::Id.new(
-          table_metadata_table_name_column_name,
-          :type => Purview::Types::String,
-          :limit => 255,
-        )
-      end
-
-      def table_metadata_table_name_column_definition
-        column_definition(table_metadata_table_name_column)
-      end
-
-      def table_metadata_table_name_column_name
-        'table_name'
+      def table_metadata_table
+        @table_metadata_table ||= Purview::Tables::TableMetadata.new(self)
       end
 
       def table_name(table, table_opts={})
@@ -703,8 +554,8 @@ module Purview
         end
       end
 
-      def true_value
-        dialect.true_value
+      def tables_option
+        opts[:tables] || []
       end
 
       def type(column)
@@ -731,7 +582,8 @@ module Purview
       def with_next_table(timestamp)
         with_new_connection do |connection|
           table = next_table(connection, timestamp)
-          raise Purview::Exceptions::NoTable.new unless table
+          raise Purview::Exceptions::NoTable.new \
+            unless table
           yield table
         end
       end
@@ -743,7 +595,8 @@ module Purview
             table,
             timestamp
           )
-          raise Purview::Exceptions::NoWindow.new(table) unless window
+          raise Purview::Exceptions::NoWindowForTable.new(table) \
+            unless window
           yield window
         end
       end

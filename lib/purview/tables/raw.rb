@@ -1,6 +1,6 @@
 module Purview
   module Tables
-    class Raw < Base
+    class Raw < BaseSyncable
       def name
         "#{super}_raw"
       end
