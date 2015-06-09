@@ -7,7 +7,7 @@ module Purview
         @name = name
         @opts = opts
         @tables = Set.new.tap do |result|
-          (default_tables + tables_option).each do |table|
+          (default_tables + tables_opt).each do |table|
             table.database = self if result.add?(table)
           end
         end
@@ -32,9 +32,9 @@ module Purview
 
       def create_index(index, opts={})
         ensure_index_valid_for_database(index)
-        table_opts = extract_table_options(opts)
+        table_opts = extract_table_opts(opts)
         table_name = table_name(index.table, table_opts)
-        index_opts = extract_index_options(opts)
+        index_opts = extract_index_opts(opts)
         index_name = index_name(
           table_name,
           index,
@@ -58,7 +58,7 @@ module Purview
       def create_table(table, opts={})
         ensure_table_valid_for_database(table)
         ensure_table_metadata_exists_for_table(table)
-        table_opts = extract_table_options(opts)
+        table_opts = extract_table_opts(opts)
         table_name = table_name(table, table_opts)
         with_context_logging("`create_table` for: #{table_name}") do
           with_new_or_existing_connection(opts) do |connection|
@@ -100,9 +100,9 @@ module Purview
 
       def drop_index(index, opts={})
         ensure_index_valid_for_database(index)
-        table_opts = extract_table_options(opts)
+        table_opts = extract_table_opts(opts)
         table_name = table_name(index.table, table_opts)
-        index_opts = extract_index_options(opts)
+        index_opts = extract_index_opts(opts)
         index_name = index_name(
           table_name,
           index,
@@ -126,7 +126,7 @@ module Purview
       def drop_table(table, opts={})
         ensure_table_valid_for_database(table)
         ensure_table_metadata_absent_for_table(table)
-        table_opts = extract_table_options(opts)
+        table_opts = extract_table_opts(opts)
         table_name = table_name(table, table_opts)
         with_context_logging("`drop_table` for: #{table_name}") do
           with_new_connection do |connection|
@@ -385,11 +385,11 @@ module Purview
           unless tables.include?(table)
       end
 
-      def extract_index_options(opts)
+      def extract_index_opts(opts)
         opts[:index] || {}
       end
 
-      def extract_table_options(opts)
+      def extract_table_opts(opts)
         opts[:table] || { :create_indices => true }
       end
 
@@ -554,7 +554,7 @@ module Purview
         end
       end
 
-      def tables_option
+      def tables_opt
         opts[:tables] || []
       end
 

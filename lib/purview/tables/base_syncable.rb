@@ -2,7 +2,7 @@ module Purview
   module Tables
     class BaseSyncable < Base
       def created_timestamp_column
-        column_from_options_of_type(Purview::Columns::CreatedTimestamp) or raise %{Must specify a column of type: "#{Purview::Columns::CreatedTimestamp}"}
+        column_from_opts_of_type(Purview::Columns::CreatedTimestamp) or raise %{Must specify a column of type: "#{Purview::Columns::CreatedTimestamp}"}
       end
 
       def created_timestamp_index
@@ -10,7 +10,7 @@ module Purview
       end
 
       def id_column
-        column_from_options_of_type(Purview::Columns::Id) or raise %{Must specify a column of type: "#{Purview::Columns::Id}"}
+        column_from_opts_of_type(Purview::Columns::Id) or raise %{Must specify a column of type: "#{Purview::Columns::Id}"}
       end
 
       def sync(connection, window)
@@ -29,7 +29,7 @@ module Purview
       end
 
       def updated_timestamp_column
-        column_from_options_of_type(Purview::Columns::UpdatedTimestamp) or raise %{Must specify a column of type: "#{Purview::Columns::UpdatedTimestamp}"}
+        column_from_opts_of_type(Purview::Columns::UpdatedTimestamp) or raise %{Must specify a column of type: "#{Purview::Columns::UpdatedTimestamp}"}
       end
 
       def updated_timestamp_index
@@ -42,8 +42,8 @@ module Purview
 
       private
 
-      def column_from_options_of_type(type)
-        columns_option.select { |column| column.is_a?(type) }.first
+      def column_from_opts_of_type(type)
+        columns_opt.select { |column| column.is_a?(type) }.first
       end
 
       def default_columns
@@ -61,11 +61,11 @@ module Purview
         ]
       end
 
-      def extract_type_option(opts)
+      def extract_type_opt(opts)
         opts[:type]
       end
 
-      def filter_type_option(opts)
+      def filter_type_opt(opts)
         opts.select { |key| key != :type }
       end
 
@@ -74,14 +74,14 @@ module Purview
       end
 
       def loader_opts
-        merge_table_option(filter_type_option(opts[:loader]))
+        merge_table_opt(filter_type_opt(opts[:loader]))
       end
 
       def loader_type
-        extract_type_option(opts[:loader])
+        extract_type_opt(opts[:loader])
       end
 
-      def merge_table_option(opts)
+      def merge_table_opt(opts)
         { :table => self }.merge(opts)
       end
 
@@ -90,11 +90,11 @@ module Purview
       end
 
       def parser_opts
-        merge_table_option(filter_type_option(opts[:parser]))
+        merge_table_opt(filter_type_opt(opts[:parser]))
       end
 
       def parser_type
-        extract_type_option(opts[:parser])
+        extract_type_opt(opts[:parser])
       end
 
       def puller
@@ -102,11 +102,11 @@ module Purview
       end
 
       def puller_opts
-        merge_table_option(filter_type_option(opts[:puller]))
+        merge_table_opt(filter_type_opt(opts[:puller]))
       end
 
       def puller_type
-        extract_type_option(opts[:puller])
+        extract_type_opt(opts[:puller])
       end
     end
   end

@@ -6,7 +6,7 @@ module Purview
       def initialize(name, opts={})
         @name = name.to_sym
         @opts = default_opts.merge(opts)
-        @table = table_option
+        @table = table_opt
       end
 
       def default
@@ -84,7 +84,7 @@ module Purview
         {}
       end
 
-      def table_option
+      def table_opt
         opts[:table]
       end
     end

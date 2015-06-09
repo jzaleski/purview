@@ -6,7 +6,7 @@ module Purview
       def initialize(columns, opts={})
         @columns = columns
         @opts = opts
-        @table = table_option
+        @table = table_opt
       end
 
       def eql?(other)
@@ -36,7 +36,7 @@ module Purview
 
       attr_reader :opts
 
-      def table_option
+      def table_opt
         opts[:table]
       end
     end

@@ -6,14 +6,14 @@ module Purview
       def initialize(name, opts={})
         @name = name
         @opts = opts
-        @database = database_option
+        @database = database_opt
         @columns = Set.new.tap do |result|
-          (default_columns + columns_option).each do |column|
+          (default_columns + columns_opt).each do |column|
             column.table = self if result.add?(column)
           end
         end
         @indices = Set.new.tap do |result|
-          (default_indices + indices_option).each do |index|
+          (default_indices + indices_opt).each do |index|
             index.table = self if result.add?(index)
           end
         end
@@ -42,11 +42,11 @@ module Purview
 
       attr_reader :opts
 
-      def columns_option
+      def columns_opt
         opts[:columns] || []
       end
 
-      def database_option
+      def database_opt
         opts[:database]
       end
 
@@ -58,7 +58,7 @@ module Purview
         []
       end
 
-      def indices_option
+      def indices_opt
         opts[:indices] || []
       end
     end

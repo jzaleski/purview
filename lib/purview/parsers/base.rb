@@ -3,6 +3,7 @@ module Purview
     class Base
       def initialize(opts={})
         @opts = opts
+        @table = table_opt
       end
 
       def parse(data)
@@ -17,7 +18,7 @@ module Purview
 
       include Purview::Mixins::Logger
 
-      attr_reader :opts
+      attr_reader :opts, :table
 
       def extract_headers(data)
         raise %{All "#{Base}(s)" must override the "extract_headers" method}
@@ -27,7 +28,7 @@ module Purview
         raise %{All "#{Base}(s)" must override the "extract_rows" method}
       end
 
-      def table
+      def table_opt
         opts[:table]
       end
     end
