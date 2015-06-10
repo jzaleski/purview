@@ -118,12 +118,6 @@ database = Purview::Databases::MySQL.new(
 )
 ```
 
-Add the `Table` to the `Database` (schema). In order for [the] `Table` to be
-`sync[ed]` it *must* be added to [the] `Database`
-```ruby
-database.add_table(table)
-```
-
 Create the `Table` (in the DB). Recommended for testing purposes *only*. For
 production environments you will likely want an external process to manage the
 schema (for `PostgreSQL` simply change `Mysql2::Error` to `PG::DuplicateTable`)
