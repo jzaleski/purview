@@ -36,7 +36,7 @@ table_name = :users
 Define the `Column(s)` (available column-types: `Boolean`, `CreatedTimestamp`,
 `Date`, `Float`, `Id`, `Integer`, `Money`, `String`, `Text`, `Time`, `Timestamp`,
 `UpdatedTimestamp` & `UUID` -- the `Id`, `CreatedTimestamp` & `UpdatedTimestamp`
-columns are required for all tables)
+columns are required for all `BaseSyncable` tables)
 ```ruby
 id_column = Purview::Columns::Id.new(:id),
 name_column = Purview::Columns::String.new(:name, :nullable => false),
@@ -58,7 +58,7 @@ Define the `Indices` (availble index-types: `Composite` & `Simple`). By default
 `UpdatedTimestamp`)
 ```ruby
 indices = [
-  Purview::Indices::Simple.new(email_column),
+  Purview::Indices::Simple.new(email_column, :unique => true),
 ]
 ```
 
@@ -102,7 +102,7 @@ table = Purview::Tables::Raw.new(
 
 Set the database-name (this can be anything, but it must exist)
 ```ruby
-database_name = :data_warehouse
+database_name = :data_warehouse_raw
 ```
 
 Combine all the configuration options and instantiate the `Database` (for
@@ -154,14 +154,25 @@ to determine the pool of `Table(s)` available for synchronization (to remove a
 database.enable_table(table)
 ```
 
-Sync the `Database`. This process will select a [candidate] `Table`, pull data
-from its [remote-]source and reconcile the new data against the main-table (e.g.
-perform `INSERTs`, `UPDATEs` and `DELETEs`). When multiple `Table(s)` are
-configured the least recently pulled and available (`enabled` and not `locked`)
-`Table` will be selected (you will likely want to configure some process to load
-the schema run the `sync` at regularly scheduled intervals)
+Sync the `Table`. This process will pull data from its [remote-]source and
+reconcile the new data against the main-table (e.g. perform 'INSERT', 'UPDATE'
+and 'DELETE' operations).
+```ruby
+database.sync_table(table)
+```
+
+Sync the `Database`. The result of this process is the same as `sync_table`
+except that the process itself will select a candidate table. When multiple
+`Table(s)` are configured the least recently pulled and available (`enabled`,
+`initialized` and `unlocked`) `Table` will be selected.
 ```ruby
 database.sync
+```
+
+Fetch the metadata for a `Table`. This process will return a `Struct`
+representation of the current state for the given `Table`
+```ruby
+database.table_metadata(table)
 ```
 
 ## Contributing
