@@ -15,7 +15,11 @@ module Purview
       include Purview::Mixins::Logger
 
       def column_names
-        table.column_names
+        table.columns.map do |column|
+          name = column.name
+          source_name = column.source_name
+          source_name == name ? name : "#{source_name} AS #{name}"
+        end
       end
 
       def connection_type

@@ -44,7 +44,7 @@ module Purview
       end
 
       def nullable
-        coalesced(opts[:nullable], true)
+        [nil, true].include?(opts[:nullable])
       end
 
       def nullable?
@@ -65,13 +65,17 @@ module Purview
         !!primary_key
       end
 
+      def source_name
+        (opts[:source_name] || name).to_sym
+      end
+
       def table=(value)
         raise Purview::Exceptions::TableAlreadyAssignedForColumn.new(self) if table
         @table = value
       end
 
       def type
-        coalesced(opts[:type], Purview::Types::String)
+        opts[:type] || Purview::Types::String
       end
 
       private

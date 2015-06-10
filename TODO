@@ -46,6 +46,8 @@
 * Fall back to logged in user if no [database-]username is provided
 * Create class to encapulate `table_metadata` (in order to clean up the logic
   in the `Database` class(es))
+* Rename columns during pull/parse `source_name` & `target_name` perhaps? Maybe
+  create a new type of column?
 
 ... ONGOING TASKS ...
 
@@ -54,9 +56,6 @@
 * DRY/Refactor
 
 ... OPEN TASKS ....
-
-* Rename columns during pull/parse `source_name` & `target_name` perhaps? Maybe
-  create a new type of column?
 
 * Add COPY `def copy(sql)` support to PostgreSQL connection
 * Leverage COPY support for PostgreSQL pulls
@@ -68,8 +67,8 @@
 * Configurable re-pull window (do this automatically once up to current?)
 * Add schema management capabilities (detect schema-deltas and suggestion
   modifications)
-* Consider refactoring mutator methods to be globally available (e.g. coalesced
-  -> Coalesce, quoted -> Quote, etc.)
+* Consider refactoring mutator methods to be globally available (e.g. quoted ->
+  Quote, etc.)
 
 ... CLOSED QUESTIONS ...
 

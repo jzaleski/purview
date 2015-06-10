@@ -26,8 +26,8 @@ module Purview
       def build_result(row)
         {}.tap do |result|
           row.each do |key, value|
-            if column = table.columns_by_name[key]
-              result[key] = column.parse(value)
+            if column = table.columns_by_source_name[key]
+              result[column.name] = column.parse(value)
             else
               logger.debug(%{Unexpected column: "#{key}" in data-set})
             end
@@ -49,8 +49,18 @@ module Purview
         rows.map { |row| parse_row(row) }
       end
 
+      def map_headers(headers)
+        headers.map do |header|
+          if column = table.columns_by_source_name[header]
+            column.name
+          else
+            logger.debug(%{Could not find column with source_name: "#{header}"})
+          end
+        end
+      end
+
       def missing_columns(data)
-        table.column_names - extract_headers(data)
+        table.column_names - map_headers(extract_headers(data))
       end
 
       def parse_row(row)

@@ -4,7 +4,7 @@ module Purview
       attr_reader :columns, :database, :indices, :name
 
       def initialize(name, opts={})
-        @name = name
+        @name = name.to_sym
         @opts = opts
         @database = database_opt
         @columns = Set.new.tap do |result|
@@ -26,6 +26,13 @@ module Purview
       def columns_by_name
         columns.reduce({}) do |memo, column|
           memo[column.name] = column
+          memo
+        end
+      end
+
+      def columns_by_source_name
+        columns.reduce({}) do |memo, column|
+          memo[column.source_name] = column
           memo
         end
       end

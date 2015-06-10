@@ -4,7 +4,7 @@ module Purview
       attr_reader :name, :tables
 
       def initialize(name, opts={})
-        @name = name
+        @name = name.to_sym
         @opts = opts
         @tables = Set.new.tap do |result|
           (default_tables + tables_opt).each do |table|
