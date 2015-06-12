@@ -9,8 +9,8 @@ if defined?(Jdbc::Postgres)
         class Postgres < Base
           private
 
-          def engine
-            'postgresql'
+          def url
+            "jdbc:postgresql://#{host}#{port && ":#{port}"}/#{database}"
           end
 
           def username

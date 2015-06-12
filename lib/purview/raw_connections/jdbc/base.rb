@@ -10,10 +10,6 @@ module Purview
           delete?(sql) || insert?(sql) || update?(sql)
         end
 
-        def engine
-          raise %{All "#{Base}(s)" must override the "engine" method}
-        end
-
         def execute_sql(sql, opts={})
           @last_sql = sql
           @last_statement = statement = raw_connection.createStatement
@@ -58,7 +54,7 @@ module Purview
         end
 
         def url
-          "jdbc:#{engine}://#{host}#{port && ":#{port}"}/#{database}"
+          raise %{All "#{Base}(s)" must override the "url" method}
         end
       end
     end
