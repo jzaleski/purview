@@ -21,9 +21,10 @@ Or install it yourself as:
 
 ## Usage
 
-Load the `MySQL` client (for `PostgreSQL` simply change 'mysql2' to 'pg' -- when
-using this gem in a JRuby environment the 'jdbc/mysql' and/or 'jdbc/postgres'
-library must be installed/available)
+Load the `MySQL` client (for `MSSQL` simple change 'mysql2' to 'tiny_tds'; for
+`PostgreSQL` simply change 'mysql2' to 'pg' -- when using this gem in a JRuby
+environment the 'jdbc/jtds', 'jdbc/mysql' and/or 'jdbc/postgres'library must be
+installed/available)
 ```ruby
 require 'mysql2'
 ```
@@ -62,7 +63,8 @@ indices = [
 ]
 ```
 
-Configure the `Puller` (available puller-types: `MySQL`, `PostgreSQL` & `URI`)
+Configure the `Puller` (available puller-types: `MSSQL`, `MySQL`, `PostgreSQL` &
+`URI`)
 ```ruby
 puller_opts = {
   :type => Purview::Pullers::URI,

@@ -19,8 +19,9 @@ Gem::Specification.new do |gem|
   gem.test_files = gem.files.grep(%r{^(test|spec|features)/})
   gem.require_paths = ['lib']
 
-  gem.requirements << '`jdbc-mysql` or `mysql2` gem'
-  gem.requirements << '`jdbc-postgres` or `pg` gem'
+  gem.requirements << '`mysql2` or `jdbc-mysql` gem'
+  gem.requirements << '`pg` or `jdbc-postgres` gem'
+  gem.requirements << '`tiny_tds` or `jdbc-jtds` gem'
 
   gem.add_development_dependency 'bundler', '~> 1.0'
   gem.add_development_dependency 'pry', '~> 0.10'

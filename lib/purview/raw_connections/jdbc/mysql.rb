@@ -9,8 +9,8 @@ if defined?(Jdbc::MySQL)
         class MySQL < Base
           private
 
-          def engine
-            'mysql'
+          def url
+            "jdbc:mysql://#{host}#{port && ":#{port}"}/#{database}"
           end
 
           def username

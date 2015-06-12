@@ -3,7 +3,7 @@ module Purview
     class BaseSQL < Base
       def pull(window)
         with_new_connection do |connection|
-          connection.execute(pull_sql(window))
+          connection.execute(pull_sql(window) + additional_sql)
         end
       end
 
@@ -13,6 +13,10 @@ module Purview
       include Purview::Mixins::Dialect
       include Purview::Mixins::Helpers
       include Purview::Mixins::Logger
+
+      def additional_sql
+        " #{opts[:additional_sql]}".rstrip
+      end
 
       def column_names
         table.columns.map do |column|
