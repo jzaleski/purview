@@ -21,7 +21,7 @@ Or install it yourself as:
 
 ## Usage
 
-Load the `MySQL` client (for `MSSQL` simple change 'mysql2' to 'tiny_tds'; for
+Load the `MySQL` client (for `MSSQL` simply change 'mysql2' to 'tiny_tds'; for
 `PostgreSQL` simply change 'mysql2' to 'pg' -- when using this gem in a JRuby
 environment the 'jdbc/jtds', 'jdbc/mysql' and/or 'jdbc/postgres'library must be
 installed/available)
@@ -58,32 +58,23 @@ Define the `Indices` (availble index-types: `Composite` & `Simple`). By default
 `Indices` will be added for the required column-types (`CreatedTimestamp` &
 `UpdatedTimestamp`)
 ```ruby
-indices = [
-  Purview::Indices::Simple.new(email_column, :unique => true),
-]
+indices = [Purview::Indices::Simple.new(email_column, :unique => true)]
 ```
 
 Configure the `Puller` (available puller-types: `MSSQL`, `MySQL`, `PostgreSQL` &
 `URI`)
 ```ruby
-puller_opts = {
-  :type => Purview::Pullers::URI,
-  :uri => 'http://feed.test.com/users',
-}
+puller_opts = {:type => Purview::Pullers::URI, :uri => 'http://feed.test.com/users'}
 ```
 
 Configure the `Parser` (available parser-types: `CSV`, `SQL` & `TSV`)
 ```ruby
-parser_opts = {
-  :type => Purview::Parsers::TSV,
-}
+parser_opts = {:type => Purview::Parsers::TSV}
 ```
 
 Configure the `Loader` (for `PostgreSQL` simply change `MySQL` to `PostgreSQL`)
 ```ruby
-loader_opts = {
-  :type => Purview::Loaders::MySQL,
-}
+loader_opts = {:type => Purview::Loaders::MySQL}
 ```
 
 Combine all the configuration options and instantiate the `Table`
@@ -96,10 +87,7 @@ table_opts = {
   :puller => puller_opts,
 }
 
-table = Purview::Tables::Raw.new(
-  table_name,
-  table_opts
-)
+table = Purview::Tables::Raw.new(table_name, table_opts)
 ```
 
 Set the database-name (this can be anything, but it must exist)
@@ -110,14 +98,9 @@ database_name = :data_warehouse_raw
 Combine all the configuration options and instantiate the `Database` (for
 `PostgreSQL` simply change `MySQL` to `PostgreSQL`)
 ```ruby
-database_opts = {
-  :tables => [table],
-}
+database_opts = {:tables => [table]}
 
-database = Purview::Databases::MySQL.new(
-  database_name,
-  database_opts
-)
+database = Purview::Databases::MySQL.new(database_name, database_opts)
 ```
 
 Create the `Table` (in the DB). Recommended for testing purposes *only*. For
