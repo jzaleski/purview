@@ -72,7 +72,8 @@ Configure the `Parser` (available parser-types: `CSV`, `SQL` & `TSV`)
 parser_opts = {:type => Purview::Parsers::TSV}
 ```
 
-Configure the `Loader` (for `PostgreSQL` simply change `MySQL` to `PostgreSQL`)
+Configure the `Loader` (for a different loader type simply change `MySQL` to
+`MSSQL`, `PostgreSQL` or `SQLite`)
 ```ruby
 loader_opts = {:type => Purview::Loaders::MySQL}
 ```
@@ -95,8 +96,9 @@ Set the database-name (this can be anything, but it must exist)
 database_name = :data_warehouse_raw
 ```
 
-Combine all the configuration options and instantiate the `Database` (for
-`PostgreSQL` simply change `MySQL` to `PostgreSQL`)
+Combine all the configuration options and instantiate the `Database` (for a
+different database engine simply change `MySQL` to `MSSQL`, `PostgreSQL` or
+`SQLite`)
 ```ruby
 database_opts = {:tables => [table]}
 
@@ -106,7 +108,7 @@ database = Purview::Databases::MySQL.new(database_name, database_opts)
 Create the `Table` (in the DB). Recommended for testing purposes *only*. For
 production environments you will likely want an external process to manage the
 schema (for `PostgreSQL` simply change `Mysql2::Error` to `PG::DuplicateTable`,
-for `SQLite` simply change `Mysql2::Error` to `SQLite3::SQLException`)
+for `SQLite` simply change `Mysql2::Error` to `SQLite3::SQLException`, etc.)
 ```ruby
 begin
   database.create_table(table)

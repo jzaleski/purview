@@ -1,10 +1,10 @@
 module Purview
   module Databases
-    class PostgreSQL < Base
+    class MSSQL < Base
       private
 
       def connection_type
-        Purview::Connections::PostgreSQL
+        Purview::Connections::MSSQL
       end
 
       def create_index_sql(table_name, index_name, index, index_opts={})
@@ -24,14 +24,14 @@ module Purview
       end
 
       def create_temporary_table_sql(table_name, table, table_opts={})
-        'CREATE TEMPORARY TABLE %s (LIKE %s INCLUDING ALL)' % [
+        'CREATE TEMPORARY TABLE %s (%s)' % [
           table_name,
-          table.name,
+          column_definitions(table).join(', '),
         ]
       end
 
       def dialect_type
-        Purview::Dialects::PostgreSQL
+        Purview::Dialects::MSSQL
       end
 
       def disable_table_sql(table)
@@ -137,7 +137,7 @@ module Purview
       end
 
       def next_table_sql(timestamp)
-        'SELECT %s FROM %s WHERE %s IS NOT NULL AND %s IS NOT NULL AND %s IS NULL ORDER BY %s IS NULL DESC, %s LIMIT 1' % [
+        'SELECT TOP 1 %s FROM %s WHERE %s IS NOT NULL AND %s IS NOT NULL AND %s IS NULL ORDER BY (CASE WHEN %s IS NULL THEN 0 ELSE 1 END), %s' % [
           table_metadata_table.table_name_column.name,
           table_metadata_table.name,
           table_metadata_table.enabled_at_column.name,
@@ -161,7 +161,7 @@ module Purview
       def type_map
         super.merge(
           Purview::Types::Money => 'money',
-          Purview::Types::UUID => 'uuid',
+          Purview::Types::UUID => 'uniqueidentifier',
         )
       end
 
