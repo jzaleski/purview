@@ -2,13 +2,15 @@ source 'https://rubygems.org'
 
 group :development do
   if defined?(JRUBY_VERSION)
-    gem 'jdbc-jtds', '~> 1.3'
-    gem 'jdbc-mysql', '~> 5.1'
-    gem 'jdbc-postgres', '~> 9.4'
+    gem 'jdbc-jtds', '~> 1.0'
+    gem 'jdbc-mysql', '~> 5.0'
+    gem 'jdbc-postgres', '~> 9.0'
+    gem 'jdbc-sqlite3', '~> 3.0'
   else
-    gem 'mysql2', '~> 0.3'
-    gem 'pg', '~> 0.18'
-    gem 'tiny_tds', '~> 0.6'
+    gem 'mysql2', '~> 0.4'
+    gem 'pg', '~> 0.20'
+    gem 'sqlite3', '~> 1.0'
+    gem 'tiny_tds', '~> 1.0'
   end
 end
 

@@ -1,4 +1,4 @@
-safe_require('jdbc-postgres')
+safe_require('jdbc/postgres')
 
 if defined?(Jdbc::Postgres)
   Jdbc::Postgres.load_driver

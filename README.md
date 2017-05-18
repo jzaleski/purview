@@ -39,11 +39,11 @@ Define the `Column(s)` (available column-types: `Boolean`, `CreatedTimestamp`,
 `UpdatedTimestamp` & `UUID` -- the `Id`, `CreatedTimestamp` & `UpdatedTimestamp`
 columns are required for all `BaseSyncable` tables)
 ```ruby
-id_column = Purview::Columns::Id.new(:id),
-name_column = Purview::Columns::String.new(:name, :nullable => false),
-email_column = Purview::Columns::String.new(:email, :nullable => false, :limit => 100),
-created_at_column = Purview::Columns::CreatedTimestamp.new(:created_at),
-updated_at_column = Purview::Columns::UpdatedTimestamp.new(:updated_at),
+id_column = Purview::Columns::Id.new(:id)
+name_column = Purview::Columns::String.new(:name, :nullable => false)
+email_column = Purview::Columns::String.new(:email, :nullable => false, :limit => 100)
+created_at_column = Purview::Columns::CreatedTimestamp.new(:created_at)
+updated_at_column = Purview::Columns::UpdatedTimestamp.new(:updated_at)
 
 columns = [
   id_column,
@@ -105,7 +105,8 @@ database = Purview::Databases::MySQL.new(database_name, database_opts)
 
 Create the `Table` (in the DB). Recommended for testing purposes *only*. For
 production environments you will likely want an external process to manage the
-schema (for `PostgreSQL` simply change `Mysql2::Error` to `PG::DuplicateTable`)
+schema (for `PostgreSQL` simply change `Mysql2::Error` to `PG::DuplicateTable`,
+for `SQLite` simply change `Mysql2::Error` to `SQLite3::SQLException`)
 ```ruby
 begin
   database.create_table(table)
@@ -118,9 +119,11 @@ Initialize the `Table` (in the DB). This process sets the `max_timestamp_pulled`
 value in the `table_metadata` table and is used by the candidate `Table`
 selection algorithm to determine which `Table` should be synchronized next (the
 least recently synchronized `Table` will be selected). This value is also used
-as the high-water mark for records pulled from its source
+as the high-water mark for records pulled from its source. Unless a `timestamp`
+is specified, as the second argument, the high-water mark will default to
+`Time.now.utc`
 ```ruby
-database.initialize_table(table, timestamp)
+database.initialize_table(table)
 ```
 
 Baseline the `Table`. This process will quickly get the state of the `Table` as
@@ -137,6 +140,15 @@ to determine the pool of `Table(s)` available for synchronization (to remove a
 `Table` from the pool simply execute `disable_table`)
 ```ruby
 database.enable_table(table)
+```
+
+Disable the `Table` (in the DB). This process clears the `enabled_at` value in
+the `table_metadata` table which will remove the table from the candidate `Table`
+selection algorithm used to determine the pool of `Table(s)` available for
+synchronization (to add a `Table` back into the pool, simply execute
+`enable_table`)
+```ruby
+database.disable_table(table)
 ```
 
 Sync the `Table`. This process will pull data from its [remote-]source and

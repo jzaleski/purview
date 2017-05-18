@@ -13,7 +13,7 @@ module Purview
         end
       end
 
-      def baseline_table(table)
+      def baseline_table(table, timestamp=Time.now.utc)
         ensure_table_valid_for_database(table)
         raise Purview::Exceptions::CouldNotBaselineTable.new(table) \
           unless table_initialized?(table)
@@ -84,7 +84,7 @@ module Purview
         table_name
       end
 
-      def disable_table(table)
+      def disable_table(table, timestamp=Time.now.utc)
         ensure_table_valid_for_database(table)
         table_name = table_name(table)
         with_context_logging("`disable_table` for: #{table_name}") do
@@ -142,7 +142,7 @@ module Purview
         table_name
       end
 
-      def enable_table(table, timestamp=timestamp)
+      def enable_table(table, timestamp=Time.now.utc)
         ensure_table_valid_for_database(table)
         table_name = table_name(table)
         with_context_logging("`enable_table` for: #{table_name}") do
@@ -156,7 +156,7 @@ module Purview
         table_name
       end
 
-      def initialize_table(table, timestamp=timestamp)
+      def initialize_table(table, timestamp=Time.now.utc)
         ensure_table_valid_for_database(table)
         table_name = table_name(table)
         with_context_logging("`initialize_table` for: #{table_name}") do
@@ -170,7 +170,7 @@ module Purview
         table_name
       end
 
-      def lock_table(table, timestamp=timestamp)
+      def lock_table(table, timestamp=Time.now.utc)
         ensure_table_valid_for_database(table)
         table_name = table_name(table)
         with_context_logging("`lock_table` for: #{table_name}") do
@@ -194,7 +194,7 @@ module Purview
         end
       end
 
-      def sync_table(table)
+      def sync_table(table, timestamp=Time.now.utc)
         ensure_table_valid_for_database(table)
         raise Purview::Exceptions::CouldNotSyncTable.new(table) \
           unless table_initialized?(table) && table_enabled?(table)
@@ -211,7 +211,7 @@ module Purview
         table_name = table_name(table)
         with_context_logging("`table_metadata` for: #{table_name}") do
           with_new_connection do |connection|
-            Purview::Structs::TableMetadata.new(
+            table_metadata = Purview::Structs::TableMetadata.new(
               table_metadata_table.columns.reduce({}) do |memo, column|
                 memo[column.name] = get_table_metadata_value(
                   connection,

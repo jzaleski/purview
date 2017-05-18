@@ -12,7 +12,8 @@ module Purview
       end
 
       def method_missing(method, *args, &block)
-        raise NoMethodError if args.empty?
+        method = method.to_sym unless method.is_a?(Symbol)
+        raise NoMethodError if args.empty? && !respond_to?(method)
         super
       end
     end
