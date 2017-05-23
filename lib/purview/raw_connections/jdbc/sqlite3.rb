@@ -10,7 +10,7 @@ if defined?(Jdbc::SQLite3)
           private
 
           def url
-            "jdbc:sqlite://#{database}"
+            "jdbc:sqlite:#{database.to_s}"
           end
         end
       end

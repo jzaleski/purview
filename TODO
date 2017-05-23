@@ -7,6 +7,7 @@ a	1450000000	1450000000	Add schema management capabilities (detect schema-deltas
 a	1450000000	1450000000	Consider refactoring mutator methods to be globally available (e.g. quoted -> Quote, etc.)
 a	1450000000	1450000000	Support parallel pulls?
 a	1450000000	1450000000	Come up w/ a deployment recommendation
+a	1495113996	1495130394	Add support for `Consumers`
 r	1450000000	1450000000	Add support for MSSQL
 r	1450000000	1495070870	Further encapsulate `Dialect` logic (in order to DRY `Database` classes)
 d	1494850714	1495046648	Finish SQLite3 raw-connections

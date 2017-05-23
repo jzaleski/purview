@@ -24,8 +24,11 @@ Gem::Specification.new do |gem|
   gem.requirements << '`sqlite3` or `jdbc-sqlite3` gem'
   gem.requirements << '`tiny_tds` or `jdbc-jtds` gem'
 
-  gem.add_development_dependency 'bundler', '~> 1.0'
+  gem.requirements << '`bunny` or `march_hare` gem (if consuming from RabbitMQ)'
+  gem.requirements << '`ruby-kafka` or `jruby-kafka` gem (if consuming from Kafka)'
+
   gem.add_development_dependency 'pry', '~> 0.10'
   gem.add_development_dependency 'rake', '~> 12.0'
-  gem.add_development_dependency 'rspec', '~> 3.0'
+  gem.add_development_dependency 'rb-readline', '~> 0.5'
+  gem.add_development_dependency 'rspec', '~> 3.6'
 end
