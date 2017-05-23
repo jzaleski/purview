@@ -19,6 +19,8 @@ Gem::Specification.new do |gem|
   gem.test_files = gem.files.grep(%r{^(test|spec|features)/})
   gem.require_paths = ['lib']
 
+  gem.required_ruby_version = '>= 2.1.0'
+
   gem.requirements << '`mysql2` or `jdbc-mysql` gem'
   gem.requirements << '`pg` or `jdbc-postgres` gem'
   gem.requirements << '`sqlite3` or `jdbc-sqlite3` gem'
