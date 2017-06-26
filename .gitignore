@@ -13,23 +13,25 @@
 tags
 tags.*
 
-## Specific to RubyMotion:
+## Specific to RubyMotion
 .dat*
 .repl_history
 build/
 
-## Documentation cache and generated files:
+## Documentation cache and generated files
 /.yardoc/
 /_yardoc/
 /doc/
 /rdoc/
 
-## Environment normalisation:
+## Environment normalisation
 /.bundle/
 /lib/bundler/man/
 
-## Ruby artifacts:
+## Ruby artifacts
 .ruby-gemset
 .ruby-version
 .rvmrc
 Gemfile.lock
+
+test.rb
