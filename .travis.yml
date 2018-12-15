@@ -2,10 +2,14 @@ language: ruby
 
 before_install:
   - sudo apt-get update -q
-  - sudo apt-get install -q freetds-dev
+  - sudo apt-get install -q build-essential freetds-dev libc6-dev
+
+matrix:
+  allow_failures:
+    - rvm: jruby-9.1.9.0
 
 rvm:
-  - 2.1.9
-  - 2.2.7
-  - 2.3.4
-  - 2.4.1
+  - 2.3.7
+  - 2.4.4
+  - 2.5.1
+  - jruby-9.1.9.0
