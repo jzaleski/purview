@@ -1,55 +1,12 @@
-a	1450000000	1450000000	Add COPY `def copy(sql)` support to PostgreSQL connection
-a	1450000000	1450000000	Leverage COPY support for PostgreSQL pulls
-a	1450000000	1450000000	Build out change-log tables
-a	1450000000	1450000000	Build out canonical, fact and aggregate tables (and related transforms)
-a	1450000000	1450000000	Configurable re-pull window (do this automatically once up to current?)
-a	1450000000	1450000000	Add schema management capabilities (detect schema-deltas and suggestion modifications)
-a	1450000000	1450000000	Consider refactoring mutator methods to be globally available (e.g. quoted -> Quote, etc.)
-a	1450000000	1450000000	Support parallel pulls?
-a	1450000000	1450000000	Come up w/ a deployment recommendation
-a	1495113996	1495130394	Add support for `Consumers`
-r	1450000000	1450000000	Add support for MSSQL
-r	1450000000	1495070870	Further encapsulate `Dialect` logic (in order to DRY `Database` classes)
-d	1494850714	1495046648	Finish SQLite3 raw-connections
-d	1495046665	1495046689	Fix JDBC driver configuration
-d	1495051831	1495070248	Code-review recent changes and merge
-d	1450000000	1450000000	Handle blank values a bit more intelligently (all blanks -> nil)
-d	1450000000	1450000000	Deal w/ NULL values
-d	1450000000	1450000000	Deal w/ BOOL values
-d	1450000000	1450000000	Build out MVP for PostgreSQL loader
-d	1450000000	1450000000	Add windowing to pulls (simulate w/ 2 different data-files if necessary)
-d	1450000000	1450000000	Include [window] timestamps in query-string for pull[er]
-d	1450000000	1450000000	Figure out an intelligent way to solve the chicken <-> egg problem for `table_metadata`
-d	1450000000	1450000000	Fail fast if there are no candidate tables (`next_table`)
-d	1450000000	1450000000	Ensure that the puller does not try to go into the future (`next_window`)
-d	1450000000	1450000000	Add in a primitive logging facility (can be temporary)
-d	1450000000	1450000000	Enhance `next_table_sql`
-d	1450000000	1450000000	Lock tables (feeds) during pull, parse and load
-d	1450000000	1450000000	Verify table-locking mechanism behaves as expected
-d	1450000000	1450000000	Ability to drop a table
-d	1450000000	1450000000	Reorder args: "table, table_name" to: "table_name, table"
-d	1450000000	1450000000	Reorder args: "table, index_name, *columns" to "index_name, table, *columns"
-d	1450000000	1450000000	Ability to create an index
-d	1450000000	1450000000	Ability to drop an index
-d	1450000000	1450000000	Indices on `created_at` and `updated_at` columns
-d	1450000000	1450000000	Gracefully handle table {,un}locking in case of error
-d	1450000000	1450000000	Add debugging code
-d	1450000000	1450000000	Raise no-window & no-table exceptions (making them catchable upstream)
-d	1450000000	1450000000	Minimize race-condition around table-locking (use where on UPDATE, raise if zero rows are updated)
-d	1450000000	1450000000	Log number of delete, inserts and updates in `loader`
-d	1450000000	1450000000	`load_temporary_table` should bomb if there is data outside the window
-d	1450000000	1450000000	Delete from outside window where id in temporary table
-d	1450000000	1450000000	Rename `data` to `rows` in `execute`
-d	1450000000	1450000000	Rename `Postgres` to `PostgreSQL`
-d	1450000000	1450000000	Finish PostgreSQL support (requires `pg` gem)
-d	1450000000	1450000000	Finish MySQL support (requires `mysql2` gem)
-d	1450000000	1450000000	Usage/configuration examples in README.md
-d	1450000000	1450000000	Create SQL-puller(s)
-d	1450000000	1450000000	Introduce [SQL] dialect(s)
-d	1450000000	1450000000	Fix JRuby bundle/build
-d	1450000000	1450000000	Fall back to logged in user if no [database-]username is provided
-d	1450000000	1450000000	Create class to encapulate `table_metadata` (in order to clean up the logic in the `Database` class(es))
-d	1450000000	1450000000	Rename columns during pull/parse `source_name` & `target_name` perhaps? Maybe create a new type of column?
-d	1450000000	1495070826	Add support for SQLite3
-d	1494850696	1495070857	Add TODOs from $HOME\purview-TODO
-d	1495070065	1495072292	Finish MSSQL built-out
+f510dd97-ffd2-11e8-9c7a-8c8590c6ab8c	00000000-0000-0000-0000-000000000000	jzaleski	jzaleski	1544814215	1544814215	a	Add `create` functionality to `Database(s)`
+af4b8882-ffd8-11e8-8ecb-8c8590c6ab8c	00000000-0000-0000-0000-000000000000	jzaleski	jzaleski	1544816675	1544816675	a	Add COPY `def copy(sql)` support to PostgreSQL connection
+b30f4757-ffd8-11e8-afb9-8c8590c6ab8c	00000000-0000-0000-0000-000000000000	jzaleski	jzaleski	1544816681	1544816681	a	Leverage COPY support for PostgreSQL pulls
+b9fec1b8-ffd8-11e8-973b-8c8590c6ab8c	00000000-0000-0000-0000-000000000000	jzaleski	jzaleski	1544816693	1544816693	a	Build out change-log, canonical, fact and aggregate tables (and related transforms)
+bef458cc-ffd8-11e8-88b6-8c8590c6ab8c	00000000-0000-0000-0000-000000000000	jzaleski	jzaleski	1544816701	1544816701	a	Make re-pull window configurable (do this automatically once up to current?)
+c2c85f85-ffd8-11e8-b2c3-8c8590c6ab8c	00000000-0000-0000-0000-000000000000	jzaleski	jzaleski	1544816708	1544816708	a	Add schema management capabilities (detect schema-deltas and suggestion modifications)
+c70ab22b-ffd8-11e8-8c9a-8c8590c6ab8c	00000000-0000-0000-0000-000000000000	jzaleski	jzaleski	1544816715	1544816715	a	Refactor mutator methods to be globally available (e.g. quoted -> Quote, etc.)
+cc6c3091-ffd8-11e8-b484-8c8590c6ab8c	00000000-0000-0000-0000-000000000000	jzaleski	jzaleski	1544816724	1544816724	a	Add parallel pull(s) support
+d1ecf75e-ffd8-11e8-87cf-8c8590c6ab8c	00000000-0000-0000-0000-000000000000	jzaleski	jzaleski	1544816733	1544816733	a	Add support for `Consumers`
+683a87f8-ffe3-11e8-8e33-8c8590c6ab8c	00000000-0000-0000-0000-000000000000	jzaleski	jzaleski	1544821280	1544821280	a	Fix SQLite3 (it doesn't appear to work)
+0aae0fab-ffe4-11e8-ae70-8c8590c6ab8c	00000000-0000-0000-0000-000000000000	jzaleski	jzaleski	1544821553	1544821553	a	Fix PostgreSQL, it doesn't appear to work
+c3b21ac5-ffe6-11e8-802b-8c8590c6ab8c	00000000-0000-0000-0000-000000000000	jzaleski	jzaleski	1544822722	1544822722	a	Need to add time-zone support to adjust SQL puller results

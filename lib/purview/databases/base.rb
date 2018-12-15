@@ -395,7 +395,7 @@ module Purview
 
       def get_table_metadata_value(connection, table, column)
         row = connection.execute(get_table_metadata_value_sql(table, column)).rows[0]
-        raise CouldNotFindMetadataForTable.new(table) \
+        raise Purview::Exceptions::CouldNotFindMetadataForTable.new(table) \
           unless row
         value = row[column.name]
         value && column.type.parse(value)
@@ -463,7 +463,7 @@ module Purview
       def set_table_metadata_value(connection, table, column, value)
         rows_affected = \
           connection.execute(set_table_metadata_value_sql(table, column, value)).rows_affected
-        raise CouldNotUpdateMetadataForTable.new(table) \
+        raise Purview::Exceptions::CouldNotUpdateMetadataForTable.new(table) \
           if zero?(rows_affected)
       end
 

@@ -39,10 +39,12 @@ module Purview
       end
 
       def disable_table_sql(table)
-        'UPDATE %s SET %s = %s WHERE %s = %s AND %s IS NOT NULL' % [
+        'UPDATE %s SET %s = %s, %s = %s WHERE %s = %s AND %s IS NOT NULL' % [
           table_metadata_table.name,
           table_metadata_table.enabled_at_column.name,
           null_value,
+          table_metadata_table.last_updated_at_column.name,
+          quoted(Time.now.utc),
           table_metadata_table.table_name_column.name,
           quoted(table.name),
           table_metadata_table.enabled_at_column.name,
@@ -62,10 +64,12 @@ module Purview
       end
 
       def enable_table_sql(table, timestamp)
-        'UPDATE %s SET %s = %s WHERE %s = %s AND %s IS NULL' % [
+        'UPDATE %s SET %s = %s, %s = %s WHERE %s = %s AND %s IS NULL' % [
           table_metadata_table.name,
           table_metadata_table.enabled_at_column.name,
           quoted(timestamp),
+          table_metadata_table.last_updated_at_column.name,
+          quoted(Time.now.utc),
           table_metadata_table.table_name_column.name,
           quoted(table.name),
           table_metadata_table.enabled_at_column.name,
@@ -81,7 +85,7 @@ module Purview
       end
 
       def ensure_table_metadata_exists_for_table_sql(table)
-        'INSERT IGNORE INTO %s VALUES (%s, NULL, NULL, NULL, NULL)' % [
+        'INSERT IGNORE INTO %s VALUES (%s, NULL, NULL, NULL, NULL, NULL)' % [
           table_metadata_table.name,
           quoted(table.name),
         ]
@@ -95,10 +99,12 @@ module Purview
       end
 
       def initialize_table_sql(table, timestamp)
-        'UPDATE %s SET %s = %s WHERE %s = %s AND %s IS NULL' % [
+        'UPDATE %s SET %s = %s, %s = %s WHERE %s = %s AND %s IS NULL' % [
           table_metadata_table.name,
           table_metadata_table.max_timestamp_pulled_column.name,
           quoted(timestamp),
+          table_metadata_table.last_updated_at_column.name,
+          quoted(Time.now.utc),
           table_metadata_table.table_name_column.name,
           quoted(table.name),
           table_metadata_table.max_timestamp_pulled_column.name,
@@ -119,10 +125,12 @@ module Purview
       end
 
       def lock_table_sql(table, timestamp)
-        'UPDATE %s SET %s = %s WHERE %s = %s AND %s IS NULL' % [
+        'UPDATE %s SET %s = %s, %s = %s WHERE %s = %s AND %s IS NULL' % [
           table_metadata_table.name,
           table_metadata_table.locked_at_column.name,
           quoted(timestamp),
+          table_metadata_table.last_updated_at_column.name,
+          quoted(Time.now.utc),
           table_metadata_table.table_name_column.name,
           quoted(table.name),
           table_metadata_table.locked_at_column.name,
@@ -142,10 +150,12 @@ module Purview
       end
 
       def set_table_metadata_value_sql(table, column, value)
-        'UPDATE %s SET %s = %s WHERE %s = %s' % [
+        'UPDATE %s SET %s = %s, %s = %s WHERE %s = %s' % [
           table_metadata_table.name,
           column.name,
           quoted(value),
+          table_metadata_table.last_updated_at_column.name,
+          quoted(Time.now.utc),
           table_metadata_table.table_name_column.name,
           quoted(table.name),
         ]
@@ -159,10 +169,12 @@ module Purview
       end
 
       def unlock_table_sql(table)
-        'UPDATE %s SET %s = %s WHERE %s = %s AND %s IS NOT NULL' % [
+        'UPDATE %s SET %s = %s, %s = %s WHERE %s = %s AND %s IS NOT NULL' % [
           table_metadata_table.name,
           table_metadata_table.locked_at_column.name,
           null_value,
+          table_metadata_table.last_updated_at_column.name,
+          quoted(Time.now.utc),
           table_metadata_table.table_name_column.name,
           quoted(table.name),
           table_metadata_table.locked_at_column.name,

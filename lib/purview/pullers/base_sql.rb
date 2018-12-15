@@ -65,7 +65,7 @@ module Purview
       end
 
       def table_name
-        opts[:table_name]
+        opts[:table].name.gsub(/_raw$/, '')
       end
     end
   end

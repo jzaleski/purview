@@ -22,7 +22,7 @@ module Purview
       end
 
       def timestamp
-        Time.now
+        Time.now.utc
       end
 
       def with_timestamp

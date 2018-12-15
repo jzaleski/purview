@@ -8,6 +8,7 @@ module Purview
             table_name_column,
             enabled_at_column,
             last_pulled_at_column,
+            last_updated_at_column,
             locked_at_column,
             max_timestamp_pulled_column,
           ],
@@ -21,6 +22,10 @@ module Purview
 
       def last_pulled_at_column
         Purview::Columns::Timestamp.new(:last_pulled_at)
+      end
+
+      def last_updated_at_column
+        Purview::Columns::Timestamp.new(:last_updated_at)
       end
 
       def locked_at_column
