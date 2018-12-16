@@ -7,6 +7,6 @@ c2c85f85-ffd8-11e8-b2c3-8c8590c6ab8c	00000000-0000-0000-0000-000000000000	jzales
 c70ab22b-ffd8-11e8-8c9a-8c8590c6ab8c	00000000-0000-0000-0000-000000000000	jzaleski	jzaleski	1544816715	1544816715	a	Refactor mutator methods to be globally available (e.g. quoted -> Quote, etc.)
 cc6c3091-ffd8-11e8-b484-8c8590c6ab8c	00000000-0000-0000-0000-000000000000	jzaleski	jzaleski	1544816724	1544816724	a	Add parallel pull(s) support
 d1ecf75e-ffd8-11e8-87cf-8c8590c6ab8c	00000000-0000-0000-0000-000000000000	jzaleski	jzaleski	1544816733	1544816733	a	Add support for `Consumers`
-683a87f8-ffe3-11e8-8e33-8c8590c6ab8c	00000000-0000-0000-0000-000000000000	jzaleski	jzaleski	1544821280	1544821280	a	Fix SQLite3 (it doesn't appear to work)
-0aae0fab-ffe4-11e8-ae70-8c8590c6ab8c	00000000-0000-0000-0000-000000000000	jzaleski	jzaleski	1544821553	1544821553	a	Fix PostgreSQL, it doesn't appear to work
+683a87f8-ffe3-11e8-8e33-8c8590c6ab8c	00000000-0000-0000-0000-000000000000	jzaleski	jzaleski	1544821280	1544971163	d	Fix SQLite3 (it doesn't appear to work)
+0aae0fab-ffe4-11e8-ae70-8c8590c6ab8c	00000000-0000-0000-0000-000000000000	jzaleski	jzaleski	1544821553	1544971167	r	Fix PostgreSQL, it doesn't appear to work
 c3b21ac5-ffe6-11e8-802b-8c8590c6ab8c	00000000-0000-0000-0000-000000000000	jzaleski	jzaleski	1544822722	1544822722	a	Need to add time-zone support to adjust SQL puller results

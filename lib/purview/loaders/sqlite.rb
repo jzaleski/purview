@@ -52,12 +52,15 @@ module Purview
       end
 
       def table_update_sql(window, temporary_table_name)
-        'UPDATE %s t1 JOIN %s t2 ON t1.%s = t2.%s SET %s' % [
+        'DELETE FROM %s WHERE %s IN (SELECT %s FROM %s); INSERT INTO %s (%s) SELECT %s FROM %s' % [
           table.name,
+          table.id_column.name,
+          table.id_column.name,
           temporary_table_name,
-          table.id_column.name,
-          table.id_column.name,
-          table.column_names.map { |column_name| "t1.#{column_name} = t2.#{column_name}" }.join(', '),
+          table.name,
+          table.column_names.join(', '),
+          table.column_names.join(', '),
+          temporary_table_name,
         ]
       end
 
