@@ -123,7 +123,7 @@ selection algorithm to determine which `Table` should be synchronized next (the
 least recently synchronized `Table` will be selected). This value is also used
 as the high-water mark for records pulled from its source. Unless a `timestamp`
 is specified, as the second argument, the high-water mark will default to
-`Time.now.utc`
+`Time.now`
 ```ruby
 database.initialize_table(table)
 ```
